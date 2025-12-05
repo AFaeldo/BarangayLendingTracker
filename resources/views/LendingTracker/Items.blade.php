@@ -1,7 +1,7 @@
 @extends('Layout.layout_lendingtracker')
 
 @section('title', 'Items — Brgy. San Antonio')
-@section('page-title', 'Items')
+@section('page-title', 'Item')
 
 @section('content')
 
@@ -70,8 +70,8 @@
                             {{-- VIEW --}}
                             <button
                                 type="button"
-                                class="btn btn-secondary"
-                                style="padding:4px 8px;font-size:0.8rem;background:#5a5a5a;"
+                                class="btn"
+                                style="padding:4px 8px;font-size:0.8rem;background:#04AA6D;"
                                 data-view-item
                                 data-item='@json($item)'
                             >
@@ -103,7 +103,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"
-                                        class="btn btn-secondary"
+                                        class="btn "
                                         style="padding:4px 8px;font-size:0.8rem;background:#b3261e;">
                                     Delete
                                 </button>
@@ -140,11 +140,6 @@
                 </div>
 
                 <div class="modal-row">
-                    <label>Photo (optional)</label>
-                    <input type="file" name="photo" class="input">
-                </div>
-
-                <div class="modal-row">
                     <label>Total Quantity</label>
                     <input type="number" name="quantity" class="input" min="0" required>
                 </div>
@@ -153,7 +148,7 @@
                     <label>Condition</label>
                     <select name="condition" class="select" required>
                         <option value="Good">Good</option>
-                        <option value="For Repair">For Repair</option>
+                        <!-- <option value="For Repair">For Repair</option> -->
                         <option value="Damaged">Damaged</option>
                     </select>
                 </div>
@@ -163,7 +158,7 @@
                     <select name="status" class="select" required>
                         <option value="Available">Available</option>
                         <option value="Borrowed">Borrowed</option>
-                        <option value="Maintenance">Maintenance</option>
+                        <!--  -->
                     </select>
                 </div>
 

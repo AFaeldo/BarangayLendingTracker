@@ -26,57 +26,65 @@
         <h2>WELCOME ADMINISTRATOR!</h2>
         <hr class="divider">
 
-        <nav class="nav" aria-label="Main nav">
-            <a href="{{ route('dashboard') }}"
-               class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </a>
-            <a href="{{ route('residents.index') }}"
-               class="{{ request()->routeIs('residents.*') ? 'active' : '' }}">
-                <i class="fas fa-users"></i> Residents
-            </a>
-            <a href="{{ route('items.index') }}"
-               class="{{ request()->routeIs('items.*') ? 'active' : '' }}">
-                <i class="fas fa-boxes"></i> Items
-            </a>
-            <a href="{{ route('borrowing.index') }}"
-               class="{{ request()->routeIs('borrowing.*') ? 'active' : '' }}">
-                <i class="fas fa-file-alt"></i> Borrowed Record
-            </a>
-            <a href="{{ route('reports.index') }}"
-               class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">
-                <i class="fas fa-chart-line"></i> Reports
-            </a>
-        </nav>
-    </aside>
+            <nav class="nav" aria-label="Main nav">
+        <a href="{{ route('dashboard') }}"
+           class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="{{ route('residents.index') }}"
+           class="{{ request()->routeIs('residents.*') ? 'active' : '' }}">
+            <i class="fas fa-users"></i> Residents
+        </a>
+        <a href="{{ route('borrowing.create') }}"
+           class="{{ request()->routeIs('borrowing.create') ? 'active' : '' }}">
+            <i class="fas fa-plus"></i>  Borrowing
+        </a>
+        <a href="{{ route('items.index') }}"
+           class="{{ request()->routeIs('items.*') ? 'active' : '' }}">
+            <i class="fas fa-boxes"></i> Items
+        </a>
+        <a href="{{ route('borrowing.index') }}"
+           class="{{ request()->routeIs('borrowing.*') ? 'active' : '' }}">
+            <i class="fas fa-file-alt"></i> Borrowed Record
+        </a>
+        <a href="{{ route('archive.index') }}"
+           class="{{ request()->routeIs('archive.*') ? 'active' : '' }}">
+            <i class="fas fa-archive"></i> Archive
+        </a>
+        <a href="{{ route('reports.index') }}"
+           class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">
+            <i class="fas fa-chart-line"></i> Reports
+        </a>
+    </nav>
+</aside>
 
-    {{-- MAIN --}}
-    <main class="main">
-        <header class="header">
-            <div class="left-controls">
-                <button class="btn-hamburger" aria-label="Toggle sidebar" aria-expanded="false">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+{{-- MAIN --}}
+<main class="main">
+    <header class="header">
+        <div class="left-controls">
+            <button class="btn-hamburger" aria-label="Toggle sidebar" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
 
-                <div class="page-title" style="text-transform: uppercase;">
-                    @yield('page-title', 'Dashboard')
-                </div>
-
+            <div class="page-title" style="text-transform: uppercase;">
+                @yield('page-title', 'Dashboard')
             </div>
-            <div class="header-right">
-                <div class="profile" id="profile-menu" role="button" tabindex="0">
-                    <i class="fas fa-user-circle"></i>
-                    <div class="name">Admin</div>
-                </div>
-                <div class="dropdown" id="dropdown-menu">
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit" style="background:none; border:none; width:100%; text-align:left; padding:10px 16px; cursor:pointer;">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </button>
-    </form>
+
+        </div>
+        <div class="header-right">
+            <div class="profile" id="profile-menu" role="button" tabindex="0">
+                <i class="fas fa-user-circle"></i>
+                <div class="name">Admin</div>
+            </div>
+            <div class="dropdown" id="dropdown-menu">
+<form method="POST" action="{{ route('logout') }}">
+    @csrf
+    <button type="submit" style="background:none; border:none; width:100%; text-align:left; padding:10px 16px; cursor:pointer;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+</form>
 </div>
 
             </div>

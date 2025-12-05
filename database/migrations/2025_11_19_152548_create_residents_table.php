@@ -13,11 +13,13 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('first_name');
             $table->string('middle_initial')->nullable();
-            $table->string('gender', 10);
-            $table->unsignedInteger('age')->nullable();
+            $table->enum('gender', ['Male', 'Female']); // Restrict gender values
+            $table->date('birth_date')->nullable();      // New birth_date field
+            $table->unsignedInteger('age')->nullable();  // Optional, can be calculated
+            $table->string('email')->nullable();         // New email field
             $table->string('sitio')->nullable();
             $table->string('contact')->nullable();
-            $table->string('status')->default('Active'); // Active / Inactive
+            $table->string('status')->default('Active');
             $table->text('remarks')->nullable();
             $table->timestamps();
         });

@@ -38,12 +38,11 @@
                     <th>Item</th>
                     <th>Quantity</th>
                     <th>Date Borrowed</th>
-                    <th>Due Date</th>
+                    <!-- <th>Due Date</th> -->
                     <th>Date Returned</th>
                     <th>Status</th>
                     <th>Condition on Return</th>
-                    <th>Lost?</th>
-                    <th>Received By</th>
+                    <th>Lost</th>
                     <th>Remarks</th>
                     <th>Actions</th>
                 </tr>
@@ -65,7 +64,7 @@
 
                         <td>{{ $b->quantity }}</td>
                         <td>{{ $b->date_borrowed }}</td>
-                        <td>{{ $b->due_date ?? '—' }}</td>
+                        <!-- <td>{{ $b->due_date ?? '—' }}</td> -->
                         <td>{{ $b->returned_at ?? '—' }}</td>
 
                         {{-- STATUS (Borrowed / Returned / Lost / Overdue) --}}
@@ -94,9 +93,7 @@
                             @endif
                         </td>
 
-                        {{-- RECEIVED BY --}}
-                        <td>{{ $b->received_by ?? '—' }}</td>
-
+        
                         {{-- REMARKS --}}
                         <td>{{ $b->remarks ?? '—' }}</td>
 
@@ -114,7 +111,6 @@
                                     <select name="condition_returned" class="select" style="padding:4px 8px; font-size:0.8rem;">
                                         <option value="">Condition</option>
                                         <option value="Good">Good</option>
-                                        <option value="For Repair">For Repair</option>
                                         <option value="Damaged">Damaged</option>
                                     </select>
 

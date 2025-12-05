@@ -30,40 +30,6 @@
         </div>
     </div>
 
-
-
-    {{-- ===================== --}}
-    {{-- 1: CURRENT INVENTORY LIST --}}
-    {{-- ===================== --}}
-    <div class="card" style="padding:18px">
-        <h3 class="muted">Current Inventory List</h3>
-
-        <table class="table mt-3">
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Total Qty</th>
-                    <th>Available</th>
-                    <th>Condition</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($inventory_list ?? [] as $item)
-                    <tr>
-                        <td>{{ $item->name }}</td>
-                        <td>{{ $item->quantity_total }}</td>
-                        <td>{{ $item->quantity_available }}</td>
-                        <td>{{ $item->condition }}</td>
-                    </tr>
-                @empty
-                    <tr><td colspan="4" class="text-center">No items found.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-
-
     {{-- ===================== --}}
     {{-- 2: BORROWED ITEMS SUMMARY --}}
     {{-- ===================== --}}
@@ -130,32 +96,7 @@
 
 
 
-    {{-- ===================== --}}
-    {{-- 4: BORROWING FREQUENCY PER AREA --}}
-    {{-- ===================== --}}
-    <div class="card" style="padding:18px">
-        <h3 class="muted">Borrowing Frequency per Barangay Area</h3>
-
-        <table class="table mt-3">
-            <thead>
-                <tr>
-                    <th>Area / Zone</th>
-                    <th>Total Borrowings</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($frequency_area ?? [] as $area)
-                    <tr>
-                        <td>{{ $area->zone }}</td>
-                        <td>{{ $area->total }}</td>
-                    </tr>
-                @empty
-                    <tr><td colspan="2" class="text-center">No records by area.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
+   
 
 
     {{-- ===================== --}}

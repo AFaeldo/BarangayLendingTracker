@@ -1,435 +1,288 @@
+{{-- resources/views/residents/index.blade.php --}}
 @extends('Layout.layout_lendingtracker')
 
 @section('title', 'Residents — Brgy. San Antonio')
 @section('page-title', 'Residents')
 
+@php
+    // helper: convert resident to safe JSON for embedding
+    function safe_json($obj) {
+        return json_encode($obj, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_AMP|JSON_HEX_QUOT);
+    }
+@endphp
+
 @section('content')
 
-{{-- Success message --}}
-@if (session('success'))
-    <div class="success-message" style="margin-bottom:12px;">
-        {{ session('success') }}
-    </div>
-@endif
+    {{-- Success Message --}}
+    @if (session('success'))
+        <div class="alert alert-success" role="status">
+            <i class="fas fa-check-circle" aria-hidden="true"></i>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
 
-{{-- Validation errors --}}
-@if ($errors->any())
-    <div class="error-message" style="margin-bottom:12px;">
-        <ul style="margin:0; padding-left:18px;">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+    {{-- Validation Errors (Server Side) --}}
+    @if ($errors->any())
+        <div class="alert alert-danger" role="alert">
+            <ul style="margin: 0; padding-left: 20px;">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-<!-- Search + Add -->
-<div class="top-bar">
-    <div class="form-row">
-        <input class="input"
-               type="text"
-               placeholder="Search Resident Name or ID..."
-               data-filter-input
-               data-filter-target="#residents-table tbody tr">
-        <button class="btn" type="button">Search</button>
-    </div>
-
-    <button class="btn" type="button" id="btn-open-add-resident">
-        <i class="fas fa-user-plus" style="margin-right:8px"></i>
-        Add New Resident
-    </button>
-</div>
-
-<!-- Residents Table -->
-<div class="card table-card" style="margin-top:20px; padding:18px;">
-    <h3>Resident List</h3>
-    <table class="table" id="residents-table">
-        <thead>
-            <tr>
-                <th>Resident ID</th>
-                <th>Last Name</th>
-                <th>First Name</th>
-                <th>M.I</th>
-                <th>Gender</th>
-                <th>Age</th>
-                <th>Sitio / Purok</th>
-                <th>Contact</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @forelse ($residents as $resident)
-                <tr>
-                    <td>{{ $resident->id }}</td>
-                    <td>{{ $resident->last_name }}</td>
-                    <td>{{ $resident->first_name }}</td>
-                    <td>{{ $resident->middle_initial }}</td>
-                    <td>{{ $resident->gender }}</td>
-                    <td>{{ $resident->age }}</td>
-                    <td>{{ $resident->purok ?? $resident->sitio }}</td>
-                    <td>{{ $resident->contact }}</td>
-                    <td>{{ $resident->status }}</td>
-                    <td style="display:flex; gap:6px; flex-wrap:wrap;">
-                        {{-- VIEW --}}
-                        <button type="button"
-                                class="btn btn-secondary"
-                                style="padding:4px 8px;font-size:0.8rem;background:#5a5a5a;"
-                                data-view-resident
-                                data-resident='@json($resident)'>
-                            View
-                        </button>
-
-                        {{-- EDIT --}}
-                        <button
-                            type="button"
-                            class="btn"
-                            style="padding:4px 8px;font-size:0.8rem;"
-                            data-edit-resident
-                            data-id="{{ $resident->id }}"
-                            data-update-url="{{ route('residents.update', $resident) }}"
-                            data-last_name="{{ $resident->last_name }}"
-                            data-first_name="{{ $resident->first_name }}"
-                            data-middle_name="{{ $resident->middle_name }}"
-                            data-middle_initial="{{ $resident->middle_initial }}"
-                            data-alias="{{ $resident->alias }}"
-                            data-gender="{{ $resident->gender }}"
-                            data-marital_status="{{ $resident->marital_status }}"
-                            data-spouse_name="{{ $resident->spouse_name }}"
-                            data-purok="{{ $resident->purok ?? $resident->sitio }}"
-                            data-employment_status="{{ $resident->employment_status }}"
-                            data-birthdate="{{ $resident->birthdate }}"
-                            data-place_of_birth="{{ $resident->place_of_birth }}"
-                            data-age="{{ $resident->age }}"
-                            data-age_month="{{ $resident->age_month }}"
-                            data-height_cm="{{ $resident->height_cm }}"
-                            data-weight_kg="{{ $resident->weight_kg }}"
-                            data-religion="{{ $resident->religion }}"
-                            data-voter_status="{{ $resident->voter_status }}"
-                            data-is_pwd="{{ $resident->is_pwd }}"
-                            data-contact="{{ $resident->contact }}"
-                            data-status="{{ $resident->status }}"
-                            data-remarks="{{ $resident->remarks }}"
-                        >
-                            Edit
-                        </button>
-
-                        {{-- DELETE --}}
-                        <form method="POST"
-                              action="{{ route('residents.destroy', $resident) }}"
-                              onsubmit="return confirm('Delete this resident?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit"
-                                    class="btn btn-secondary"
-                                    style="padding:4px 8px;font-size:0.8rem;background:#b3261e;">
-                                Delete
-                            </button>
-                        </form>
-
-                       <button
-    type="button"
-    class="btn btn-secondary"
-    style="padding:4px 8px;font-size:0.8rem;background:#5a5a5a;"
-    data-borrow-resident
-    data-id="{{ $resident->id }}"
-    data-name="{{ $resident->last_name }}, {{ $resident->first_name }}"
->
-    Add Borrowing
-</button>
-
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="10" style="text-align:center; padding:20px; color:gray;">
-                        No residents found. Click <strong>Add New Resident</strong> to register a new one.
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
-
-<!-- ADD / EDIT RESIDENT MODAL -->
-<div class="modal-backdrop" id="add-resident-backdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="addResidentTitle">
-
-        <div class="modal-header">
-            <h3 id="addResidentTitle">Add New Resident</h3>
-            <button type="button" class="modal-close" id="btn-close-add-resident">&times;</button>
+    <!-- Top bar: search + add -->
+    <div class="top-bar" style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px;">
+        <div>
+            <input id="search-input" class="input" type="text" placeholder="Search Resident name, contact or purok..." aria-label="Search residents" style="width:320px;">
         </div>
 
-        <form class="modal-body modal-grid" method="POST" id="resident-form" action="{{ route('residents.store') }}">
-            @csrf
-
-            <div class="modal-row full-width" id="resident-id-row" style="display:none;">
-                <label>Resident ID</label>
-                <input type="text" name="resident_id_display" class="input" readonly>
-            </div>
-
-            <!-- LEFT COLUMN -->
-            <div class="modal-col">
-                <div class="modal-row">
-                    <label>Last Name</label>
-                    <input type="text" name="last_name" class="input" required>
-                </div>
-
-                <div class="modal-row">
-                    <label>First Name</label>
-                    <input type="text" name="first_name" class="input" required>
-                </div>
-
-                <div class="modal-row">
-                    <label>Middle Name</label>
-                    <input type="text" name="middle_name" class="input">
-                </div>
-
-                <div class="modal-row">
-                    <label>Alias</label>
-                    <input type="text" name="alias" class="input">
-                </div>
-
-                <div class="modal-row">
-                    <label>Gender</label>
-                    <select name="gender" class="select" required>
-                        <option value="" disabled selected>Select gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Non-binary">Non-binary</option>
-                        <option value="Prefer not to say">Prefer not to say</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <div class="modal-row">
-                    <label>Marital Status</label>
-                    <select name="marital_status" class="select">
-                        <option value="" selected>-- Select --</option>
-                        <option value="Single">Single</option>
-                        <option value="Married">Married</option>
-                        <option value="Separated">Separated</option>
-                        <option value="Widowed">Widowed</option>
-                    </select>
-                </div>
-
-                <div class="modal-row">
-                    <label>Name of Spouse</label>
-                    <input type="text" name="spouse_name" class="input">
-                </div>
-
-                <div class="modal-row">
-                    <label>Purok / Sitio</label>
-                    <input type="text" name="purok" class="input">
-                </div>
-
-                <div class="modal-row">
-                    <label>Employment Status</label>
-                    <select name="employment_status" class="select">
-                        <option value="" selected>-- Select --</option>
-                        <option value="Employed">Employed</option>
-                        <option value="Self-employed">Self-employed</option>
-                        <option value="Unemployed">Unemployed</option>
-                        <option value="Student">Student</option>
-                        <option value="Retired">Retired</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- RIGHT COLUMN -->
-            <div class="modal-col">
-                <div class="modal-row">
-                    <label>Birthdate</label>
-                    <input type="date" name="birthdate" class="input">
-                </div>
-
-                <div class="modal-row">
-                    <label>Place of Birth</label>
-                    <input type="text" name="place_of_birth" class="input">
-                </div>
-
-                <div class="modal-row">
-                    <label>Age</label>
-                    <input type="number" name="age" class="input" min="0">
-                </div>
-
-                <div class="modal-row">
-                    <label>Age (Months)</label>
-                    <input type="number" name="age_month" class="input" min="0">
-                </div>
-
-                <div class="modal-row">
-                    <label>Height (cm)</label>
-                    <input type="number" name="height_cm" class="input" min="0">
-                </div>
-
-                <div class="modal-row">
-                    <label>Weight (kg)</label>
-                    <input type="number" name="weight_kg" class="input" min="0">
-                </div>
-
-                <div class="modal-row">
-                    <label>Religion</label>
-                    <input type="text" name="religion" class="input">
-                </div>
-
-                <div class="modal-row">
-                    <label>Voter Status</label>
-                    <select name="voter_status" class="select">
-                        <option value="" selected>-- Select --</option>
-                        <option value="Registered">Registered</option>
-                        <option value="Not Registered">Not Registered</option>
-                    </select>
-                </div>
-
-                <div class="modal-row">
-                    <label>Person with Disability (PWD)</label>
-                    <input type="checkbox" name="is_pwd" value="1" style="width:auto;">
-                </div>
-
-                <div class="modal-row">
-                    <label>Contact Number</label>
-                    <input type="text" name="contact" class="input">
-                </div>
-
-                <div class="modal-row">
-                    <label>Status</label>
-                    <select name="status" class="select" required>
-                        <option value="Active" selected>Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Full width remarks + buttons -->
-            <div class="modal-row full-width">
-                <label>Remarks</label>
-                <textarea name="remarks" class="input" rows="3"></textarea>
-            </div>
-
-            <div class="modal-footer full-width">
-                <button type="button" class="btn btn-secondary" id="btn-cancel-add-resident">Cancel</button>
-                <button type="submit" class="btn">Save Resident</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- VIEW RESIDENT MODAL -->
-<div class="modal-backdrop" id="view-resident-backdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="viewResidentTitle">
-        <div class="modal-header">
-            <h3 id="viewResidentTitle">Resident Details</h3>
-            <button type="button" class="modal-close" id="btn-close-view-resident">&times;</button>
-        </div>
-
-        <div class="modal-body modal-grid">
-            <div class="modal-col">
-                <p><strong>Resident ID:</strong> <span id="view-id"></span></p>
-                <p><strong>Last Name:</strong> <span id="view-last-name"></span></p>
-                <p><strong>First Name:</strong> <span id="view-first-name"></span></p>
-                <p><strong>Middle Name:</strong> <span id="view-middle-name"></span></p>
-                <p><strong>Alias:</strong> <span id="view-alias"></span></p>
-                <p><strong>Gender:</strong> <span id="view-gender"></span></p>
-                <p><strong>Marital Status:</strong> <span id="view-marital"></span></p>
-                <p><strong>Name of Spouse:</strong> <span id="view-spouse"></span></p>
-                <p><strong>Purok / Sitio:</strong> <span id="view-purok"></span></p>
-                <p><strong>Employment Status:</strong> <span id="view-employment"></span></p>
-            </div>
-
-            <div class="modal-col">
-                <p><strong>Birthdate:</strong> <span id="view-birthdate"></span></p>
-                <p><strong>Place of Birth:</strong> <span id="view-birthplace"></span></p>
-                <p><strong>Age:</strong> <span id="view-age"></span></p>
-                <p><strong>Age (Months):</strong> <span id="view-age-month"></span></p>
-                <p><strong>Height (cm):</strong> <span id="view-height"></span></p>
-                <p><strong>Weight (kg):</strong> <span id="view-weight"></span></p>
-                <p><strong>Religion:</strong> <span id="view-religion"></span></p>
-                <p><strong>Voter Status:</strong> <span id="view-voter"></span></p>
-                <p><strong>PWD:</strong> <span id="view-pwd"></span></p>
-            </div>
-
-            <div class="modal-row full-width">
-                <p><strong>Contact:</strong> <span id="view-contact"></span></p>
-                <p><strong>Status:</strong> <span id="view-status"></span></p>
-                <p><strong>Remarks:</strong> <span id="view-remarks"></span></p>
-            </div>
-        </div>
-
-        <div class="modal-footer full-width">
-            <button type="button" class="btn btn-secondary" id="btn-close-view-resident-2">Close</button>
+        <div style="display:flex; gap:8px;">
+            <button id="btn-open-add-resident" class="btn" type="button" aria-haspopup="dialog">
+                <i class="fas fa-user-plus" aria-hidden="true"></i> Add New Resident
+            </button>
         </div>
     </div>
-</div>
 
-<!-- ADD BORROWING FOR RESIDENT MODAL -->
-<div class="modal-backdrop" id="borrow-backdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="borrowResidentTitle">
-
-        <div class="modal-header">
-            <h3 id="borrowResidentTitle">Add Borrowing</h3>
-            <button type="button" class="modal-close" id="btn-close-borrow">&times;</button>
+    <!-- Residents Table -->
+    <div class="card table-card" role="region" aria-labelledby="resident-list-heading">
+        <div class="card-header">
+            <h3 id="resident-list-heading">Resident List</h3>
         </div>
 
-        <form class="modal-body" method="POST" id="borrow-form" action="{{ route('borrowing.store') }}">
-            @csrf
+        <div class="card-body" style="overflow-x:auto;">
+            <table id="residents-table" class="table" style="width:100%;" role="table" aria-describedby="resident-list-heading">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Gender</th>
+                        <th scope="col">Age</th>
+                        <th scope="col">Sitio / Purok</th>
+                        <th scope="col">Contact</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-center">Actions</th>
+                    </tr>
+                </thead>
 
-            {{-- Fixed Resident --}}
-            <div class="modal-row">
-                <label>Resident</label>
-                <input type="text" id="borrow-resident-name" class="input" readonly>
-                <input type="hidden" name="resident_id" id="borrow-resident-id">
+                <tbody>
+                    @forelse ($residents as $resident)
+                        @php
+                            $r = [
+                                'id' => $resident->id,
+                                'first_name' => $resident->first_name,
+                                'middle_name' => $resident->middle_name,
+                                'last_name' => $resident->last_name,
+                                'gender' => $resident->gender,
+                                'age' => $resident->age,
+                                'purok' => $resident->purok ?? $resident->sitio,
+                                'contact' => $resident->contact,
+                                'status' => $resident->status,
+                                'birthdate' => optional($resident->birthdate)->toDateString(),
+                                'marital_status' => $resident->marital_status,
+                                'remarks' => $resident->remarks,
+                            ];
+                        @endphp
+
+                        <tr data-resident-id="{{ $resident->id }}" data-resident='@php echo safe_json($r); @endphp'>
+                            <td>{{ $resident->id }}</td>
+                            <td>
+                                <strong>{{ $resident->last_name }}, {{ $resident->first_name }}</strong>
+                                @if(!empty($resident->middle_name))
+                                    <small class="text-muted"> {{ substr($resident->middle_name,0,1) }}.</small>
+                                @endif
+                            </td>
+                            <td>{{ $resident->gender ?? '-' }}</td>
+                            <td>{{ $resident->age ?? '-' }}</td>
+                            <td>{{ $resident->purok ?? $resident->sitio ?? '-' }}</td>
+                            <td>{{ $resident->contact ?? '-' }}</td>
+                            <td>
+                                <span class="status-badge {{ strtolower($resident->status) }}" aria-label="Status: {{ $resident->status }}">
+                                    {{ $resident->status }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="action-buttons" style="display:inline-flex; gap:6px; align-items:center;">
+                                    {{-- VIEW --}}
+                                    <button
+                                        type="button"
+                                        class="btn btn-info"
+                                        aria-label="View resident {{ $resident->id }}"
+                                        data-action="view"
+                                        title="View Details">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
+                                    </button>
+
+                                    {{-- EDIT --}}
+                                    <button
+                                        type="button"
+                                        class="btn btn-warning"
+                                        aria-label="Edit resident {{ $resident->id }}"
+                                        data-action="edit"
+                                        title="Edit resident">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
+                                    </button>
+
+                                    {{-- ARCHIVE (soft delete) --}}
+                                    <form method="POST" action="{{ route('residents.archive', $resident) }}" onsubmit="return confirm('Are you sure you want to ARCHIVE this resident?');" style="display:inline;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-danger" title="Archive resident" aria-label="Archive resident {{ $resident->id }}">
+                                            <i class="fas fa-archive" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center py-4">No residents found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Optionally include pagination controls here --}}
+        @if(method_exists($residents,'links'))
+            <div class="card-footer">
+                {{ $residents->withQueryString()->links() }}
+            </div>
+        @endif
+    </div>
+
+    <!-- ================= MODALS ================= -->
+
+    {{-- Add / Edit Resident Modal --}}
+    <div id="resident-modal" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" style="display:none;">
+        <div class="modal" role="document" aria-labelledby="resident-modal-title">
+            <div class="modal-header">
+                <h3 id="resident-modal-title">Add New Resident</h3>
+                <button type="button" class="modal-close" id="btn-close-resident-modal" aria-label="Close">&times;</button>
             </div>
 
-            {{-- Item --}}
-            <div class="modal-row">
-                <label>Item to Borrow</label>
-                <select name="item_id" class="select" required>
-                    <option value="" disabled selected>Select item</option>
-                    @foreach ($items as $item)
-                        <option value="{{ $item->id }}"
-                            {{ $item->available_quantity == 0 ? 'disabled' : '' }}>
-                            {{ $item->name }} (Avail: {{ $item->available_quantity }})
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+            <form id="resident-form" class="modal-body" method="POST" action="{{ route('residents.store') }}" novalidate>
+                @csrf
+                {{-- method spoofing input for edit will be inserted dynamically --}}
+                <div id="method-spoof"></div>
 
-            {{-- 🔴 IMPORTANT: QUANTITY FIELD --}}
-            <div class="modal-row">
-                <label>Quantity</label>
-                <input type="number" name="quantity" class="input" min="1" value="1" required>
-            </div>
+                {{-- hidden id display (for edit only) --}}
+                <div class="form-row" id="resident-id-row" style="display:none;">
+                    <label>Resident ID</label>
+                    <input type="text" name="resident_id_display" class="input" readonly>
+                </div>
 
-            {{-- Dates --}}
-            <div class="modal-row">
-                <label>Date Borrowed</label>
-                <input type="date" name="date_borrowed" class="input"
-                       value="{{ date('Y-m-d') }}" required>
-            </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="last_name">Last Name <span class="text-danger">*</span></label>
+                        <input id="last_name" type="text" name="last_name" class="input" required>
+                    </div>
 
-            <div class="modal-row">
-                <label>Due Date</label>
-                <input type="date" name="due_date" class="input">
-            </div>
+                    <div class="form-group">
+                        <label for="first_name">First Name <span class="text-danger">*</span></label>
+                        <input id="first_name" type="text" name="first_name" class="input" required>
+                    </div>
 
-            {{-- Remarks --}}
-            <div class="modal-row">
-                <label>Remarks</label>
-                <textarea name="remarks" class="input" rows="3"
-                          placeholder="Reason / notes (optional)"></textarea>
-            </div>
+                    <div class="form-group">
+                        <label for="middle_name">Middle Name</label>
+                        <input id="middle_name" type="text" name="middle_name" class="input">
+                    </div>
 
+                    <div class="form-group">
+                        <label for="gender">Gender <span class="text-danger">*</span></label>
+                        <select id="gender" name="gender" class="select" required>
+                            <option value="" disabled selected>Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="purok">Purok / Sitio</label>
+                        <input id="purok" type="text" name="purok" class="input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact">Contact Number</label>
+                        <input id="contact" type="text" name="contact" class="input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="birthdate">Birthdate</label>
+                        <input id="birthdate" type="date" name="birthdate" class="input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input id="age" type="number" name="age" class="input" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="marital_status">Civil Status</label>
+                        <select id="marital_status" name="marital_status" class="select">
+                            <option value="">-- Select --</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Widowed">Widowed</option>
+                            <option value="Separated">Separated</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Status <span class="text-danger">*</span></label>
+                        <select id="status" name="status" class="select" required>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="remarks">Remarks</label>
+                        <textarea id="remarks" name="remarks" class="input" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button id="btn-cancel-resident" type="button" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Resident</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- View Resident Modal --}}
+    <div id="resident-view-modal" class="modal-backdrop" aria-hidden="true" role="dialog" style="display:none;">
+        <div class="modal" role="document" aria-labelledby="resident-view-title">
+            <div class="modal-header">
+                <h3 id="resident-view-title">Resident Details</h3>
+                <button type="button" class="modal-close" id="btn-close-view-modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="details-grid">
+                    <div>
+                        <p><strong>ID:</strong> <span id="view-id">-</span></p>
+                        <p><strong>Name:</strong> <span id="view-name">-</span></p>
+                        <p><strong>Gender:</strong> <span id="view-gender">-</span></p>
+                        <p><strong>Status:</strong> <span id="view-status">-</span></p>
+                        <p><strong>Civil Status:</strong> <span id="view-marital">-</span></p>
+                    </div>
+                    <div>
+                        <p><strong>Purok:</strong> <span id="view-purok">-</span></p>
+                        <p><strong>Contact:</strong> <span id="view-contact">-</span></p>
+                        <p><strong>Birthdate:</strong> <span id="view-birthdate">-</span></p>
+                        <p><strong>Age:</strong> <span id="view-age">-</span></p>
+                    </div>
+                    <div class="full-width">
+                        <p><strong>Remarks:</strong> <span id="view-remarks">-</span></p>
+                    </div>
+                </div>
+            </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="btn-cancel-borrow">Cancel</button>
-                <button type="submit" class="btn">Save Borrowing</button>
+                <button id="btn-close-view-2" type="button" class="btn btn-secondary">Close</button>
             </div>
-
-        </form>
-
+        </div>
     </div>
-</div>
 
 @endsection
 
@@ -437,234 +290,175 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    /* ============================================================
-       ADD / EDIT RESIDENT MODAL
-    ============================================================ */
-
-    const addBtn       = document.getElementById('btn-open-add-resident');
-    const closeBtn     = document.getElementById('btn-close-add-resident');
-    const cancelBtn    = document.getElementById('btn-cancel-add-resident');
-    const backdrop     = document.getElementById('add-resident-backdrop');
-    const form         = document.getElementById('resident-form');
-    const title        = document.getElementById('addResidentTitle');
-    const idRow        = document.getElementById('resident-id-row');
-    const idInput      = form ? form.querySelector('input[name="resident_id_display"]') : null;
-
-    function openResidentModal() {
-        if (backdrop) backdrop.classList.add('show');
-    }
-    function closeResidentModal() {
-        if (backdrop) backdrop.classList.remove('show');
-    }
-
-    function setFormForCreate() {
-        if (!form) return;
-
-        title.textContent = 'Add New Resident';
-        form.action = "{{ route('residents.store') }}";
-
-        const methodInput = form.querySelector('input[name="_method"]');
-        if (methodInput) methodInput.remove();
-
-        form.reset();
-        if (idRow)   idRow.style.display = 'none';
-        if (idInput) idInput.value = '';
-    }
-
-    if (addBtn)    addBtn.addEventListener('click', () => { setFormForCreate(); openResidentModal(); });
-    if (closeBtn)  closeBtn.addEventListener('click', closeResidentModal);
-    if (cancelBtn) cancelBtn.addEventListener('click', closeResidentModal);
-
-    if (backdrop) {
-        backdrop.addEventListener('click', e => {
-            if (e.target === backdrop) closeResidentModal();
-        });
-    }
-
-    // ESC key closes modals
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            closeResidentModal();
-            closeViewModal();
-            closeBorrowModal();
+    // --- Build resident map from table rows ---
+    const residentRows = Array.from(document.querySelectorAll('#residents-table tbody tr[data-resident-id]'));
+    const residentsMap = {};
+    residentRows.forEach(row => {
+        try {
+            const id = row.dataset.residentId;
+            const data = JSON.parse(row.dataset.resident);
+            // normalize status for comparisons
+            data.status = (data.status || '').toString();
+            residentsMap[id] = data;
+        } catch (err) {
+            console.warn('Failed to parse resident JSON', err);
         }
     });
 
-    // ====== EDIT RESIDENT ======
-    function datasetValue(btn, key) {
-        const v = btn.dataset[key];
-        return (v === undefined || v === null || v === 'null') ? '' : v;
+    // Public helper to check if resident is active
+    window.isResidentActive = function(residentId) {
+        if (!residentId) return false;
+        const r = residentsMap[residentId.toString()];
+        if (!r) return false;
+        return (r.status || '').toLowerCase() === 'active';
+    };
+
+    // --- Search functionality (client-side) ---
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            const v = this.value.trim().toLowerCase();
+            residentRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = v === '' ? '' : (text.includes(v) ? '' : 'none');
+            });
+        });
     }
 
-    document.querySelectorAll('[data-edit-resident]').forEach(btn => {
-        btn.addEventListener('click', function () {
-            if (!form) return;
+    // --- Modal helpers ---
+    function showModal(el) { if (!el) return; el.style.display = 'flex'; el.setAttribute('aria-hidden','false'); }
+    function hideModal(el) { if (!el) return; el.style.display = 'none'; el.setAttribute('aria-hidden','true'); }
 
-            // base setup
-            setFormForCreate();
-            title.textContent = 'Edit Resident';
+    // Resident modal elements
+    const residentModal = document.getElementById('resident-modal');
+    const residentViewModal = document.getElementById('resident-view-modal');
+    const residentForm = document.getElementById('resident-form');
+    const methodSpoof = document.getElementById('method-spoof');
+    const residentIdRow = document.getElementById('resident-id-row');
+    const modalTitle = document.getElementById('resident-modal-title');
 
-            const updateUrl = this.dataset.updateUrl;
-            form.action = updateUrl;
+    // Open Add modal
+    document.getElementById('btn-open-add-resident')?.addEventListener('click', () => {
+        residentForm.reset();
+        methodSpoof.innerHTML = '';
+        residentForm.action = "{{ route('residents.store') }}";
+        residentIdRow.style.display = 'none';
+        modalTitle.textContent = 'Add New Resident';
+        showModal(residentModal);
+    });
 
-            // _method=PUT
-            const methodInput = document.createElement('input');
-            methodInput.type  = 'hidden';
-            methodInput.name  = '_method';
-            methodInput.value = 'PUT';
-            form.appendChild(methodInput);
+    // Open Edit / View using event delegation to reduce DOM handlers
+    document.querySelector('#residents-table tbody')?.addEventListener('click', function (e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const tr = btn.closest('tr[data-resident-id]');
+        if (!tr) return;
+        let r;
+        try {
+            r = JSON.parse(tr.dataset.resident);
+        } catch (err) {
+            console.warn('Invalid resident data for row', err);
+            return;
+        }
+        const action = btn.dataset.action;
+        if (action === 'view') {
+            // populate view modal
+            document.getElementById('view-id').textContent = r.id ?? '-';
+            document.getElementById('view-name').textContent = `${r.last_name}, ${r.first_name}`;
+            document.getElementById('view-gender').textContent = r.gender ?? '-';
+            document.getElementById('view-status').textContent = r.status ?? '-';
+            document.getElementById('view-marital').textContent = r.marital_status ?? '-';
+            document.getElementById('view-purok').textContent = r.purok ?? '-';
+            document.getElementById('view-contact').textContent = r.contact ?? '-';
+            document.getElementById('view-birthdate').textContent = r.birthdate ?? '-';
+            document.getElementById('view-age').textContent = r.age ?? '-';
+            document.getElementById('view-remarks').textContent = r.remarks ?? '-';
+            showModal(residentViewModal);
+            return;
+        }
 
-            // show ID
-            if (idRow)   idRow.style.display = 'block';
-            if (idInput) idInput.value = datasetValue(this, 'id');
+        if (action === 'edit') {
+            // populate edit modal
+            residentForm.reset();
+            // insert method spoof only once
+            methodSpoof.innerHTML = '<input type="hidden" name="_method" value="PUT">';
+            residentIdRow.style.display = 'flex';
+            residentForm.action = "{{ url('/residents') }}/" + r.id;
+            modalTitle.textContent = 'Edit Resident';
+            // set fields (guard each selector)
+            const setIf = (selector, value) => {
+                const el = residentForm.querySelector(selector);
+                if (el) el.value = value ?? '';
+            };
+            setIf('[name="resident_id_display"]', r.id ?? '');
+            setIf('[name="last_name"]', r.last_name ?? '');
+            setIf('[name="first_name"]', r.first_name ?? '');
+            setIf('[name="middle_name"]', r.middle_name ?? '');
+            setIf('[name="gender"]', r.gender ?? '');
+            setIf('[name="purok"]', r.purok ?? '');
+            setIf('[name="contact"]', r.contact ?? '');
+            setIf('[name="birthdate"]', r.birthdate ?? '');
+            setIf('[name="age"]', r.age ?? '');
+            setIf('[name="marital_status"]', r.marital_status ?? '');
+            setIf('[name="status"]', r.status ?? 'Active');
+            setIf('[name="remarks"]', r.remarks ?? '');
+            showModal(residentModal);
+            return;
+        }
+    });
 
-            // fill fields
-            form.elements['last_name'].value        = datasetValue(this, 'last_name');
-            form.elements['first_name'].value       = datasetValue(this, 'first_name');
-            form.elements['middle_name'].value      = datasetValue(this, 'middle_name');
-            form.elements['alias'].value            = datasetValue(this, 'alias');
-            form.elements['gender'].value           = datasetValue(this, 'gender');
-            form.elements['marital_status'].value   = datasetValue(this, 'marital_status');
-            form.elements['spouse_name'].value      = datasetValue(this, 'spouse_name');
-            form.elements['purok'].value            = datasetValue(this, 'purok');
-            form.elements['employment_status'].value= datasetValue(this, 'employment_status');
-            form.elements['birthdate'].value        = datasetValue(this, 'birthdate');
-            form.elements['place_of_birth'].value   = datasetValue(this, 'place_of_birth');
-            form.elements['age'].value              = datasetValue(this, 'age');
-            form.elements['age_month'].value        = datasetValue(this, 'age_month');
-            form.elements['height_cm'].value        = datasetValue(this, 'height_cm');
-            form.elements['weight_kg'].value        = datasetValue(this, 'weight_kg');
-            form.elements['religion'].value         = datasetValue(this, 'religion');
-            form.elements['voter_status'].value     = datasetValue(this, 'voter_status');
-            form.elements['contact'].value          = datasetValue(this, 'contact');
-            form.elements['status'].value           = datasetValue(this, 'status');
-            form.elements['remarks'].value          = datasetValue(this, 'remarks');
+    // Modal close buttons
+    document.getElementById('btn-close-resident-modal')?.addEventListener('click', () => hideModal(residentModal));
+    document.getElementById('btn-cancel-resident')?.addEventListener('click', () => hideModal(residentModal));
+    document.getElementById('btn-close-view-modal')?.addEventListener('click', () => hideModal(residentViewModal));
+    document.getElementById('btn-close-view-2')?.addEventListener('click', () => hideModal(residentViewModal));
 
-            // checkbox PWD
-            if (form.elements['is_pwd']) {
-                form.elements['is_pwd'].checked = (datasetValue(this, 'is_pwd') == '1');
-            }
+    // Close modals on ESC
+    window.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            hideModal(residentModal);
+            hideModal(residentViewModal);
+        }
+    });
 
-            openResidentModal();
+    // Click outside to close (improve accessibility: only close when clicking the backdrop)
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+        backdrop.addEventListener('click', function (evt) {
+            if (evt.target === backdrop) hideModal(backdrop);
         });
     });
 
-
-    /* ============================================================
-       VIEW RESIDENT MODAL
-    ============================================================ */
-
-    const viewBtns     = document.querySelectorAll('[data-view-resident]');
-    const viewBackdrop = document.getElementById('view-resident-backdrop');
-
-    function openViewModal() {
-        if (viewBackdrop) viewBackdrop.classList.add('show');
-    }
-    function closeViewModal() {
-        if (viewBackdrop) viewBackdrop.classList.remove('show');
-    }
-
-    const safe = (value) => value ?? '';
-
-    viewBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            let r = JSON.parse(btn.dataset.resident);
-
-            document.getElementById('view-id').textContent          = safe(r.id);
-            document.getElementById('view-last-name').textContent   = safe(r.last_name);
-            document.getElementById('view-first-name').textContent  = safe(r.first_name);
-            document.getElementById('view-middle-name').textContent = safe(r.middle_name);
-            document.getElementById('view-alias').textContent       = safe(r.alias);
-            document.getElementById('view-gender').textContent      = safe(r.gender);
-            document.getElementById('view-marital').textContent     = safe(r.marital_status);
-            document.getElementById('view-spouse').textContent      = safe(r.spouse_name);
-            document.getElementById('view-purok').textContent       = safe(r.purok) || safe(r.sitio);
-            document.getElementById('view-employment').textContent  = safe(r.employment_status);
-            document.getElementById('view-birthdate').textContent   = safe(r.birthdate);
-            document.getElementById('view-birthplace').textContent  = safe(r.place_of_birth);
-            document.getElementById('view-age').textContent         = safe(r.age);
-            document.getElementById('view-age-month').textContent   = safe(r.age_month);
-            document.getElementById('view-height').textContent      = safe(r.height_cm);
-            document.getElementById('view-weight').textContent      = safe(r.weight_kg);
-            document.getElementById('view-religion').textContent    = safe(r.religion);
-            document.getElementById('view-voter').textContent       = safe(r.voter_status);
-            document.getElementById('view-pwd').textContent         = r.is_pwd ? 'Yes' : 'No';
-            document.getElementById('view-contact').textContent     = safe(r.contact);
-            document.getElementById('view-status').textContent      = safe(r.status);
-            document.getElementById('view-remarks').textContent     = safe(r.remarks);
-
-            openViewModal();
+    // --- Guard for forms that require active resident ---
+    // Usage: any form that must have an active resident should include attribute data-requires-active-resident
+    document.querySelectorAll('form[data-requires-active-resident]').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            const residentInput = form.querySelector('[name="resident_id"], [name="residentId"], [name="resident"]');
+            if (!residentInput) return; // cannot check
+            const residentId = residentInput.value;
+            if (!isResidentActive(residentId)) {
+                e.preventDefault();
+                // show friendly message (insert temporary element)
+                const message = document.createElement('div');
+                message.className = 'alert alert-warning';
+                message.textContent = 'Selected resident is not Active. Inactive residents cannot borrow items.';
+                form.prepend(message);
+                // remove message after 6s
+                setTimeout(()=> message.remove(), 6000);
+            }
         });
     });
 
-    ['btn-close-view-resident', 'btn-close-view-resident-2'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.addEventListener('click', closeViewModal);
-    });
-
-    if (viewBackdrop) {
-        viewBackdrop.addEventListener('click', e => {
-            if (e.target === viewBackdrop) closeViewModal();
-        });
-    }
-
-
-    /* ============================================================
-       BORROWING MODAL FROM RESIDENTS
-    ============================================================ */
-
-    const borrowBackdrop  = document.getElementById('borrow-backdrop');
-    const borrowForm      = document.getElementById('borrow-form');
-    const borrowCloseBtn  = document.getElementById('btn-close-borrow');
-    const borrowCancelBtn = document.getElementById('btn-cancel-borrow');
-    const borrowNameInput = document.getElementById('borrow-resident-name');
-    const borrowIdInput   = document.getElementById('borrow-resident-id');
-
-    function openBorrowModal() {
-        if (borrowBackdrop) borrowBackdrop.classList.add('show');
-    }
-    function closeBorrowModal() {
-        if (borrowBackdrop) borrowBackdrop.classList.remove('show');
-    }
-
-    if (borrowCloseBtn)  borrowCloseBtn.addEventListener('click', closeBorrowModal);
-    if (borrowCancelBtn) borrowCancelBtn.addEventListener('click', closeBorrowModal);
-
-    if (borrowBackdrop) {
-        borrowBackdrop.addEventListener('click', function(e){
-            if (e.target === borrowBackdrop) closeBorrowModal();
-        });
-    }
-
-    document.querySelectorAll('[data-borrow-resident]').forEach(btn => {
-        btn.addEventListener('click', function () {
-            if (!borrowForm) return;
-
-            const id   = this.dataset.id;
-            const name = this.dataset.name;
-
-            if (borrowIdInput)   borrowIdInput.value   = id;
-            if (borrowNameInput) borrowNameInput.value = name;
-
-            if (borrowForm.elements['item_id']) {
-                borrowForm.elements['item_id'].value = '';
+    // Accessibility: focus the first input when modal opens (small enhancement)
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(m => {
+            if (m.attributeName === 'style' || m.attributeName === 'aria-hidden') {
+                if (residentModal.style.display !== 'none') {
+                    residentForm.querySelector('input, select, textarea')?.focus();
+                }
             }
-            if (borrowForm.elements['quantity']) {
-                borrowForm.elements['quantity'].value = 1;
-            }
-            if (borrowForm.elements['date_borrowed']) {
-                borrowForm.elements['date_borrowed'].value = "{{ date('Y-m-d') }}";
-            }
-            if (borrowForm.elements['due_date']) {
-                borrowForm.elements['due_date'].value = '';
-            }
-            if (borrowForm.elements['remarks']) {
-                borrowForm.elements['remarks'].value = '';
-            }
-
-            openBorrowModal();
         });
     });
+    observer.observe(residentModal, { attributes: true, attributeFilter: ['style', 'aria-hidden'] });
 
 });
 </script>
