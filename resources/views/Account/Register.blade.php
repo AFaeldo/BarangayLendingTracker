@@ -22,7 +22,6 @@
         <div class="header-band"></div>
 
         <div class="main-content">
-
             <div class="logo-area">
                 <img src="{{ asset('image/logo.png') }}" alt="logo">
             </div>
