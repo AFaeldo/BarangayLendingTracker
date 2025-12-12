@@ -95,100 +95,16 @@
     </div>
 
 
-
-   
-
-
         {{-- ===================== --}}
-
-
-
-   
-
-
         {{-- 5: TREND OVERVIEW CHART --}}
-
-
-
-   
-
-
         {{-- ===================== --}}
-
-
-
-   
-
-
         <div class="card p-18">
-
-
-
-   
-
-
             <h3 class="muted">Borrowing Trend Overview (Monthly)</h3>
-
-
-
-   
-
-
-    
-
-
-
-   
-
-
             {{-- Chart Canvas --}}
-
-
-
-   
-
-
             <div class="h-300 bg-light rounded p-10" style="position: relative;">
-
-
-
-   
-
-
-                <canvas id="trendChart"></canvas>
-
-
-
-   
-
-
             </div>
-
-
-
-   
-
-
         </div>
-
-
-
-   
-
-
-    
-
-
-
-   
-
-
         {{-- Watermark & Footer for Print --}}
-
-
-
-   
-
 
         <div class="print-watermark">
 
