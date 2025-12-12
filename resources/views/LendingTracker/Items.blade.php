@@ -127,44 +127,46 @@
                 <button type="button" class="modal-close" id="btn-close-item">&times;</button>
             </div>
 
-            <form class="modal-body" method="POST" id="item-form"
+            <form class="modal-body modal-grid" method="POST" id="item-form"
                   action="{{ route('items.store') }}" enctype="multipart/form-data">
                 @csrf
 
-                <div class="modal-row">
-                    <label>Item Name</label>
-                    <input type="text" name="name" class="input" required>
+                <div class="modal-col">
+                    <div class="modal-row">
+                        <label>Item Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="input" required placeholder="e.g., Folding Table">
+                    </div>
+
+                    <div class="modal-row">
+                        <label>Total Quantity <span class="text-danger">*</span></label>
+                        <input type="number" name="quantity" class="input" min="0" required placeholder="e.g., 10">
+                    </div>
+                </div>
+                
+                <div class="modal-col">
+                    <div class="modal-row">
+                        <label>Condition <span class="text-danger">*</span></label>
+                        <select name="condition" class="select" required>
+                            <option value="Good">Good</option>
+                            <option value="Damaged">Damaged</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-row">
+                        <label>Status <span class="text-danger">*</span></label>
+                        <select name="status" class="select" required>
+                            <option value="Available">Available</option>
+                            <option value="Borrowed">Borrowed</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="modal-row">
-                    <label>Total Quantity</label>
-                    <input type="number" name="quantity" class="input" min="0" required>
+                <div class="modal-row full-width">
+                    <label>Description (Optional)</label>
+                    <textarea name="description" class="input" rows="3" placeholder="Detailed description of the item..."></textarea>
                 </div>
 
-                <div class="modal-row">
-                    <label>Condition</label>
-                    <select name="condition" class="select" required>
-                        <option value="Good">Good</option>
-                        <!-- <option value="For Repair">For Repair</option> -->
-                        <option value="Damaged">Damaged</option>
-                    </select>
-                </div>
-
-                <div class="modal-row">
-                    <label>Status</label>
-                    <select name="status" class="select" required>
-                        <option value="Available">Available</option>
-                        <option value="Borrowed">Borrowed</option>
-                        <!--  -->
-                    </select>
-                </div>
-
-                <div class="modal-row">
-                    <label>Description</label>
-                    <textarea name="description" class="input" rows="3"></textarea>
-                </div>
-
-                <div class="modal-footer">
+                <div class="modal-footer full-width">
                     <button type="button" class="btn btn-secondary" id="btn-cancel-item">Cancel</button>
                     <button type="submit" class="btn">Save Item</button>
                 </div>

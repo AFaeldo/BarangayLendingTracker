@@ -26,7 +26,7 @@ class ItemController extends Controller
         $data = $request->validate([
             'name'        => ['required', 'string', 'max:255', 'unique:items,name'],
             'quantity'    => ['required', 'integer', 'min:0'],
-            'condition'   => ['required', 'string', 'in:Good,Damaged,For Repair'],
+            'condition'   => ['required', 'string', 'in:Good,Damaged'],
             'status'      => ['required', 'string', 'in:Available,Borrowed,Maintenance'],
             'description' => ['nullable', 'string'],
         ]);
@@ -50,7 +50,7 @@ class ItemController extends Controller
         $data = $request->validate([
             'name'        => ['required', 'string', 'max:255', Rule::unique('items')->ignore($item->id)],
             'quantity'    => ['required', 'integer', 'min:0'],
-            'condition'   => ['required', 'string', 'in:Good,Damaged,For Repair'],
+            'condition'   => ['required', 'string', 'in:Good,Damaged'],
             'status'      => ['required', 'string', 'in:Available,Borrowed,Maintenance'],
             'description' => ['nullable', 'string'],
         ]);
