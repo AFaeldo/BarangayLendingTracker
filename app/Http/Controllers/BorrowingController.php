@@ -16,6 +16,7 @@ class BorrowingController extends Controller
     public function index()
     {
         $borrowings = Borrowing::with(['resident', 'item'])
+            ->where('status', 'Borrowed')
             ->orderByDesc('date_borrowed')
             ->get();
 
