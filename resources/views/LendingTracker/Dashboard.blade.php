@@ -23,6 +23,14 @@
         </div>
     </div>
 
+    {{-- MONTHLY CHART --}}
+    <div class="card p-20 mb-15">
+        <h3 class="mb-10 text-gray">Monthly Borrowing Activity</h3>
+        <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+    </div>
+
     {{-- QUICK ACTIONS --}}
     <section class="quick-actions">
         <h2>Quick Actions</h2>
@@ -92,3 +100,47 @@
     </div>
 
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('monthlyChart');
+        if (ctx) {
+            // Data from Controller
+            const rawData = @json($monthly_stats ?? []);
+            
+            // Format labels (Month) and data (Total)
+            const labels = rawData.map(item => item.month);
+            const data = rawData.map(item => item.total);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Items Borrowed',
+                        data: data,
+                        backgroundColor: 'rgba(198, 107, 56, 0.6)', // Matches sidebar color
+                        borderColor: 'rgba(198, 107, 56, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+@endpush
+

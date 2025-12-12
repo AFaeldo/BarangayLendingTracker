@@ -99,16 +99,739 @@
    
 
 
-    {{-- ===================== --}}
-    {{-- 5: TREND OVERVIEW CHART --}}
-    {{-- ===================== --}}
-    <div class="card p-18">
-        <h3 class="muted">Borrowing Trend Overview (Monthly)</h3>
+        {{-- ===================== --}}
 
-        {{-- Placeholder for your chart.js or Livewire chart --}}
-        <div class="h-300 bg-light rounded d-flex align-center justify-center">
-            <span class="muted">Chart Placeholder</span>
+
+
+   
+
+
+        {{-- 5: TREND OVERVIEW CHART --}}
+
+
+
+   
+
+
+        {{-- ===================== --}}
+
+
+
+   
+
+
+        <div class="card p-18">
+
+
+
+   
+
+
+            <h3 class="muted">Borrowing Trend Overview (Monthly)</h3>
+
+
+
+   
+
+
+    
+
+
+
+   
+
+
+            {{-- Chart Canvas --}}
+
+
+
+   
+
+
+            <div class="h-300 bg-light rounded p-10" style="position: relative;">
+
+
+
+   
+
+
+                <canvas id="trendChart"></canvas>
+
+
+
+   
+
+
+            </div>
+
+
+
+   
+
+
         </div>
-    </div>
 
-@endsection
+
+
+   
+
+
+    
+
+
+
+   
+
+
+        {{-- Watermark & Footer for Print --}}
+
+
+
+   
+
+
+        <div class="print-watermark">
+
+
+
+   
+
+
+            <img src="{{ asset('image/logo.png') }}" alt="Watermark">
+
+
+
+   
+
+
+        </div>
+
+
+
+   
+
+
+        
+
+
+
+   
+
+
+        <div class="print-footer">
+
+
+
+   
+
+
+            Generated on: {{ now()->format('F j, Y g:i A') }}
+
+
+
+   
+
+
+        </div>
+
+
+
+   
+
+
+    
+
+
+
+   
+
+
+    @endsection
+
+
+
+   
+
+
+    
+
+
+
+   
+
+
+    @push('styles')
+
+
+
+   
+
+
+    <style>
+
+
+
+   
+
+
+        /* Print Styles */
+
+
+
+   
+
+
+        @media print {
+
+
+
+   
+
+
+            @page { margin: 2cm; }
+
+
+
+   
+
+
+            body { -webkit-print-color-adjust: exact; }
+
+
+
+   
+
+
+            
+
+
+
+   
+
+
+            .sidebar, .header, .btn, .top-bar { display: none !important; }
+
+
+
+   
+
+
+            .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+
+
+
+   
+
+
+            .app { display: block; }
+
+
+
+   
+
+
+            .main { margin-left: 0; }
+
+
+
+   
+
+
+            .content { padding: 0; }
+
+
+
+   
+
+
+    
+
+
+
+   
+
+
+            /* Watermark */
+
+
+
+   
+
+
+            .print-watermark {
+
+
+
+   
+
+
+                position: fixed;
+
+
+
+   
+
+
+                top: 50%;
+
+
+
+   
+
+
+                left: 50%;
+
+
+
+   
+
+
+                transform: translate(-50%, -50%);
+
+
+
+   
+
+
+                opacity: 0.1;
+
+
+
+   
+
+
+                z-index: -1;
+
+
+
+   
+
+
+                pointer-events: none;
+
+
+
+   
+
+
+                display: block !important;
+
+
+
+   
+
+
+            }
+
+
+
+   
+
+
+            .print-watermark img {
+
+
+
+   
+
+
+                width: 500px;
+
+
+
+   
+
+
+                height: auto;
+
+
+
+   
+
+
+            }
+
+
+
+   
+
+
+    
+
+
+
+   
+
+
+            /* Footer */
+
+
+
+   
+
+
+            .print-footer {
+
+
+
+   
+
+
+                position: fixed;
+
+
+
+   
+
+
+                bottom: 0;
+
+
+
+   
+
+
+                right: 0;
+
+
+
+   
+
+
+                font-size: 12px;
+
+
+
+   
+
+
+                color: #555;
+
+
+
+   
+
+
+                display: block !important;
+
+
+
+   
+
+
+            }
+
+
+
+   
+
+
+        }
+
+
+
+   
+
+
+    
+
+
+
+   
+
+
+        /* Hide print elements on screen */
+
+
+
+   
+
+
+        .print-watermark, .print-footer { display: none; }
+
+
+
+   
+
+
+    </style>
+
+
+
+   
+
+
+    @endpush
+
+
+
+   
+
+
+    
+
+
+
+   
+
+
+    @push('scripts')
+
+
+
+   
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+   
+
+
+    <script>
+
+
+
+   
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+
+
+   
+
+
+            const ctx = document.getElementById('trendChart');
+
+
+
+   
+
+
+            if (ctx) {
+
+
+
+   
+
+
+                // Data from ReportController
+
+
+
+   
+
+
+                const rawData = @json($trend_data ?? []);
+
+
+
+   
+
+
+                
+
+
+
+   
+
+
+                const labels = rawData.map(item => item.month);
+
+
+
+   
+
+
+                const data = rawData.map(item => item.total);
+
+
+
+   
+
+
+    
+
+
+
+   
+
+
+                new Chart(ctx, {
+
+
+
+   
+
+
+                    type: 'line',
+
+
+
+   
+
+
+                    data: {
+
+
+
+   
+
+
+                        labels: labels,
+
+
+
+   
+
+
+                        datasets: [{
+
+
+
+   
+
+
+                            label: 'Monthly Borrowings',
+
+
+
+   
+
+
+                            data: data,
+
+
+
+   
+
+
+                            borderColor: '#C66B38',
+
+
+
+   
+
+
+                            backgroundColor: 'rgba(198, 107, 56, 0.1)',
+
+
+
+   
+
+
+                            tension: 0.3,
+
+
+
+   
+
+
+                            fill: true
+
+
+
+   
+
+
+                        }]
+
+
+
+   
+
+
+                    },
+
+
+
+   
+
+
+                    options: {
+
+
+
+   
+
+
+                        responsive: true,
+
+
+
+   
+
+
+                        maintainAspectRatio: false,
+
+
+
+   
+
+
+                        scales: {
+
+
+
+   
+
+
+                            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+
+
+
+   
+
+
+                        }
+
+
+
+   
+
+
+                    }
+
+
+
+   
+
+
+                });
+
+
+
+   
+
+
+            }
+
+
+
+   
+
+
+        });
+
+
+
+   
+
+
+    </script>
+
+
+
+   
+
+
+    @endpush
+
+
+
+   
+
+
+    

@@ -7,6 +7,8 @@ use App\Models\Borrowing;
 use App\Models\Resident;
 use Carbon\Carbon;
 
+use Illuminate\Support\Facades\DB;
+
 class DashboardController extends Controller
 {
     public function index()
@@ -29,11 +31,24 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Monthly Trend for Chart (Last 6 months)
+        // Group by Y-m. Compatible with MySQL. 
+        // If using SQLite locally, might need strftime('%Y-%m', date_borrowed)
+        $monthly_stats = Borrowing::select(
+                DB::raw("DATE_FORMAT(date_borrowed, '%Y-%m') as month"),
+                DB::raw("COUNT(*) as total")
+            )
+            ->where('date_borrowed', '>=', Carbon::now()->subMonths(6))
+            ->groupBy('month')
+            ->orderBy('month', 'ASC')
+            ->get();
+
         return view('LendingTracker.Dashboard', compact(
             'total_residents',
             'items_borrowed',
             'overdue',
-            'recent_transactions'
+            'recent_transactions',
+            'monthly_stats'
         ));
     }
 }
