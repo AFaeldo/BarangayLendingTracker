@@ -109,25 +109,28 @@
 
                                     @csrf
 
-                                    <select name="condition_returned" class="select select-sm">
-                                        <option value="">Condition</option>
+                                    <select name="condition_returned" class="select select-sm w-full" required>
+                                        <option value="" disabled selected>Condition</option>
                                         <option value="Good">Good</option>
                                         <option value="Damaged">Damaged</option>
+                                        <option value="Lost">Lost</option>
                                     </select>
 
+                                    {{-- Optional: Received By --}}
                                     <input type="text"
                                            name="received_by"
-                                           class="input input-sm"
-                                           placeholder="Received by (optional)">
+                                           class="input input-sm w-full"
+                                           placeholder="Received by (Optional)">
 
-                                    <label class="checkbox-label mt-2">
-                                        <input type="checkbox" name="is_lost" value="1" class="checkbox-input">
-                                        Mark as LOST (no stock returned)
-                                    </label>
+                                    {{-- Optional: Remarks / Payment --}}
+                                    <input type="text"
+                                           name="remarks"
+                                           class="input input-sm w-full"
+                                           placeholder="Payment / Remarks (Optional)">
 
                                     <button type="submit"
-                                            class="btn btn-secondary btn-sm mt-4">
-                                        Mark as Returned
+                                            class="btn btn-secondary btn-sm mt-4 w-full">
+                                        Process Return
                                     </button>
                                 </form>
                             @else

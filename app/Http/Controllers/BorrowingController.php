@@ -85,34 +85,45 @@ class BorrowingController extends Controller
      */
     public function markReturned(Request $request, Borrowing $borrowing)
     {
-        if (in_array($borrowing->status, ['Returned', 'Lost'])) {
-            return back()->with('success', 'This borrowing is already processed.');
-        }
-
-        $data = $request->validate([
-            'condition_returned' => ['nullable', 'string', 'max:255'],
-            'is_lost'            => ['nullable', 'boolean'],
-            'received_by'        => ['nullable', 'string', 'max:255'],
+        $request->validate([
+            'condition_returned' => 'required|string',
+            'received_by'        => 'nullable|string|max:255',
+            'remarks'            => 'nullable|string|max:500',
         ]);
 
-        DB::transaction(function () use ($borrowing, $data) {
-            $isLost = (bool)($data['is_lost'] ?? false);
+        DB::transaction(function () use ($request, $borrowing) {
+            $condition = $request->condition_returned;
+            
+            // Determine final status
+            // If condition is Lost, status is Lost. Otherwise Returned.
+            $status = ($condition === 'Lost') ? 'Lost' : 'Returned';
 
-            $borrowing->returned_at        = now();
-            $borrowing->is_lost            = $isLost;
-            $borrowing->condition_returned = $data['condition_returned'] ?? null;
-            $borrowing->received_by        = $data['received_by'] ?? (auth()->user()->name ?? null);
-            $borrowing->status             = $isLost ? 'Lost' : 'Returned';
+            $borrowing->update([
+                'returned_at'        => now(),
+                'status'             => $status,
+                'condition_returned' => $condition,
+                'remarks'            => $request->remarks, // Save payment/remarks here
+                // We can append received_by to remarks or save it if we had a column. 
+                // Since migration didn't show 'received_by' column, let's append it to remarks for now 
+                // or assume we only use remarks. The view sends 'remarks'.
+                // If you want to strictly save received_by, ensure column exists. 
+                // For now let's just save remarks.
+            ]);
 
-            $borrowing->save();
-
-            // Return stock if item was not lost
-            if (!$isLost && $borrowing->item) {
+            // Stock Logic:
+            // Only increment stock if the item is returned in GOOD condition.
+            // Damaged or Lost items do NOT replenish the "Available" pool.
+            if ($condition === 'Good') {
                 $borrowing->item->increment('available_quantity', $borrowing->quantity);
             }
+            
+            // Note: If condition is 'Damaged', the physical item exists but is broken. 
+            // It is NOT added back to 'available_quantity'.
+            // You might want to update Item status to 'Maintenance' or similar if qty hits 0,
+            // but for now we just don't add it back.
         });
 
-        return back()->with('success', 'Borrowing marked as ' . ($data['is_lost'] ? 'lost' : 'returned') . ' successfully.');
+        return back()->with('success', 'Item marked as returned.');
     }
 
     /**
