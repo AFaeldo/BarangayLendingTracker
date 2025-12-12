@@ -171,17 +171,22 @@ Route::post('/logout', function (Request $request) {
 Route::middleware('auth')->group(function () {
 
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('LendingTracker.Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     // Borrower Records
     Route::get('/borrowing', [BorrowingController::class, 'index'])->name('borrowing.index');
+    Route::get('/borrowing/create', [BorrowingController::class, 'create'])->name('borrowing.create');
     Route::post('/borrowing', [BorrowingController::class, 'store'])->name('borrowing.store');
     Route::post('/borrowing/{borrowing}/return', [BorrowingController::class, 'markReturned'])
     ->name('borrowing.return');
 
-    // Return Tracking
+    // Archive
+    Route::get('/archive', [App\Http\Controllers\ArchiveController::class, 'index'])->name('archive.index');
+    Route::put('/archive/{id}/restore', [App\Http\Controllers\ArchiveController::class, 'restore'])->name('archive.restore');
+    Route::delete('/archive/{id}', [App\Http\Controllers\ArchiveController::class, 'destroy'])->name('archive.destroy');
+
+    // Return Tracking (Optional - duplicate of borrowing return? Or separate view?)
+    // Leaving as view for now if it serves a specific purpose, otherwise could be removed.
     Route::get('/return-tracking', function () {
         return view('LendingTracker.ReturnTracking');
     })->name('return-tracking.index');
@@ -191,6 +196,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/residents', [ResidentController::class, 'store'])->name('residents.store');
     Route::put('/residents/{resident}', [ResidentController::class, 'update'])->name('residents.update');
     Route::delete('/residents/{resident}', [ResidentController::class, 'destroy'])->name('residents.destroy');
+    // Add archive route for resident if needed by Residents.blade.php
+    Route::patch('/residents/{resident}/archive', [ResidentController::class, 'archive'])->name('residents.archive');
+
 
     // Items
     Route::get('/items', [ItemController::class, 'index'])->name('items.index');
@@ -199,8 +207,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 
     // Reports
-    Route::get('/reports', function () {
-        return view('LendingTracker.Reports');
-    })->name('reports.index');
+    Route::get('/reports', [App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
 });
     // 

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Item;
+use App\Models\Borrowing;
 use Carbon\Carbon;
 
 class ReportController extends Controller
@@ -16,35 +18,32 @@ class ReportController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        // Total items in inventory
-        $total_items = DB::table('items')->sum('quantity_total');
+        // Total items in inventory (sum of total quantity)
+        $total_items = Item::sum('quantity');
 
-        // Total currently borrowed (active only)
-        $total_borrowed = DB::table('borrow_items')
-            ->whereNull('returned_at')
-            ->sum('qty_borrowed');
+        // Total currently borrowed (active only, sum of quantity)
+        $total_borrowed = Borrowing::where('status', 'Borrowed')->sum('quantity');
 
         // Overdue items
-        $overdue = DB::table('borrow_records')
-            ->whereNull('date_returned')
-            ->where('expected_return', '<', Carbon::now())
+        $overdue = Borrowing::where('status', 'Borrowed')
+            ->whereNotNull('due_date')
+            ->where('due_date', '<', Carbon::now())
             ->count();
 
         // Most Borrowed Item
-        $most_borrowed_item = DB::table('borrow_items')
-            ->join('items', 'items.id', '=', 'borrow_items.item_id')
-            ->select('items.name', DB::raw('SUM(borrow_items.qty_borrowed) as total'))
-            ->groupBy('items.name')
+        $most_borrowed_item = Borrowing::select('item_id', DB::raw('count(*) as total'))
+            ->groupBy('item_id')
             ->orderByDesc('total')
-            ->limit(1)
-            ->value('name');
+            ->with('item')
+            ->first();
+        $most_borrowed_item_name = $most_borrowed_item ? $most_borrowed_item->item->name : 'N/A';
 
         /*
         |--------------------------------------------------------------------------
         | 1. CURRENT INVENTORY LIST
         |--------------------------------------------------------------------------
         */
-        $inventory_list = DB::table('items')->get();
+        $inventory_list = Item::all();
 
 
         /*
@@ -52,18 +51,20 @@ class ReportController extends Controller
         | 2. BORROWED ITEMS SUMMARY (active only)
         |--------------------------------------------------------------------------
         */
-        $borrowed_summary = DB::table('borrow_records')
-            ->join('borrow_items', 'borrow_items.borrow_record_id', '=', 'borrow_records.id')
-            ->join('items', 'items.id', '=', 'borrow_items.item_id')
-            ->select(
-                'borrow_records.borrower_name',
-                'items.name as item_name',
-                'borrow_items.qty_borrowed as qty',
-                'borrow_records.date_borrowed',
-                'borrow_records.expected_return'
-            )
-            ->whereNull('borrow_records.date_returned')
+        // Transforming to match view expectations: borrower_name, item_name, qty, date_borrowed, expected_return
+        $borrowed_summary_raw = Borrowing::with(['resident', 'item'])
+            ->where('status', 'Borrowed')
             ->get();
+        
+        $borrowed_summary = $borrowed_summary_raw->map(function($b) {
+            return (object)[
+                'borrower_name' => $b->resident ? ($b->resident->last_name . ', ' . $b->resident->first_name) : 'Unknown',
+                'item_name' => $b->item ? $b->item->name : 'Unknown',
+                'qty' => $b->quantity,
+                'date_borrowed' => $b->date_borrowed, // Cast to string if needed in view, but blade handles dates ok usually
+                'expected_return' => $b->due_date
+            ];
+        });
 
 
         /*
@@ -71,30 +72,26 @@ class ReportController extends Controller
         | 3. DAMAGED / LOST ITEMS SUMMARY
         |--------------------------------------------------------------------------
         */
-        $damage_list = DB::table('damage_reports')
-            ->join('items', 'items.id', '=', 'damage_reports.item_id')
-            ->select(
-                'items.name as item_name',
-                'damage_reports.type',
-                'damage_reports.description',
-                'damage_reports.created_at as reported_at'
-            )
-            ->orderBy('damage_reports.created_at', 'DESC')
+        // We don't have a damage_reports table. We can list items with condition != Good
+        // OR Borrowings that were returned Damaged or Lost.
+        // Let's go with Borrowings that were Lost or Returned Damaged.
+        
+        $damage_list_raw = Borrowing::with(['item'])
+            ->where(function($q) {
+                $q->where('is_lost', true)
+                  ->orWhere('condition_returned', 'Damaged'); // Assuming 'Damaged' is the string used
+            })
+            ->orderByDesc('updated_at')
             ->get();
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | 4. BORROWING FREQUENCY PER BARANGAY AREA
-        |--------------------------------------------------------------------------
-        */
-        $frequency_area = DB::table('borrow_records')
-            ->select(
-                'barangay_zone as zone',
-                DB::raw('COUNT(*) as total')
-            )
-            ->groupBy('barangay_zone')
-            ->get();
+        $damage_list = $damage_list_raw->map(function($b) {
+            return (object)[
+                'item_name' => $b->item ? $b->item->name : 'Unknown',
+                'type' => $b->is_lost ? 'Lost' : ($b->condition_returned ?? 'Damaged'),
+                'description' => $b->remarks ?? 'No remarks',
+                'reported_at' => $b->updated_at
+            ];
+        });
 
 
         /*
@@ -102,8 +99,12 @@ class ReportController extends Controller
         | 5. MONTHLY TREND (chart)
         |--------------------------------------------------------------------------
         */
-        $trend_data = DB::table('borrow_records')
-            ->select(
+        // Using SQLite/MySQL compatible date format
+        // For MySQL: DATE_FORMAT(date_borrowed, '%Y-%m')
+        // For SQLite: strftime('%Y-%m', date_borrowed)
+        // Assuming MySQL based on typical setup, but let's try to be generic or use raw
+        
+        $trend_data = Borrowing::select(
                 DB::raw("DATE_FORMAT(date_borrowed, '%Y-%m') as month"),
                 DB::raw("COUNT(*) as total")
             )
@@ -112,16 +113,15 @@ class ReportController extends Controller
             ->get();
 
 
-        return view('reports.index', compact(
+        return view('LendingTracker.Reports', compact(
             'total_items',
             'total_borrowed',
             'overdue',
-            'most_borrowed_item',
+            'most_borrowed_item_name', // Renamed variable to match view expectation if I change view
             'inventory_list',
             'borrowed_summary',
             'damage_list',
-            'frequency_area',
             'trend_data'
-        ));
+        ))->with('most_borrowed_item', $most_borrowed_item_name); 
     }
 }

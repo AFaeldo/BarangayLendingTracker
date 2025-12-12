@@ -51,10 +51,29 @@ class ResidentController extends Controller
     }
 
     /**
+     * Archive a resident (set status to Inactive).
+     */
+    public function archive(Resident $resident)
+    {
+        DB::transaction(function () use ($resident) {
+            $resident->update(['status' => 'Inactive']);
+        });
+
+        return redirect()->route('residents.index')
+            ->with('success', 'Resident has been archived (set to Inactive).');
+    }
+
+    /**
      * Delete a resident.
      */
     public function destroy(Resident $resident)
     {
+        // Prevent hard deletion if they have history?
+        // Usually good practice to soft delete or prevent if relation exists
+        if ($resident->borrowings()->exists()) {
+             return back()->withErrors(['error' => 'Cannot delete resident. They have borrowing records. Please archive instead.']);
+        }
+
         DB::transaction(function () use ($resident) {
             $resident->delete();
         });
@@ -71,13 +90,14 @@ class ResidentController extends Controller
         return $request->validate([
             'last_name'        => ['required', 'string', 'max:255'],
             'first_name'       => ['required', 'string', 'max:255'],
-            'middle_initial'   => ['nullable', 'string', 'max:5'],
+            'middle_name'      => ['nullable', 'string', 'max:255'],
             'gender'           => ['required', 'string', 'max:50'],
             'age'              => ['nullable', 'integer', 'min:0'],
             'birthdate'        => ['nullable', 'date'],
             'sitio'            => ['nullable', 'string', 'max:255'],
             'purok'            => ['nullable', 'string', 'max:255'],
             'contact'          => ['nullable', 'string', 'max:50'],
+            'marital_status'   => ['nullable', 'string', 'max:50'],
             'status'           => ['required', 'in:Active,Inactive'],
             'remarks'          => ['nullable', 'string'],
         ]);

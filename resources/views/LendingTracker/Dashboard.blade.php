@@ -1,4 +1,4 @@
-{{-- resources/views/Account/LendingTracker/Dashboard.blade.php --}}
+{{-- resources/views/LendingTracker/Dashboard.blade.php --}}
 @extends('Layout.layout_lendingtracker')
 
 @section('title', 'Dashboard — Brgy. San Antonio')
@@ -11,15 +11,15 @@
     <div class="stats" aria-hidden="false">
         <div class="card">
             <div class="label">Total Residents</div>
-            <div class="value">0</div>
+            <div class="value">{{ $total_residents ?? 0 }}</div>
         </div>
         <div class="card">
             <div class="label">Items Borrowed</div>
-            <div class="value">0</div>
+            <div class="value">{{ $items_borrowed ?? 0 }}</div>
         </div>
         <div class="card">
             <div class="label">Overdue</div>
-            <div class="value">0</div>
+            <div class="value">{{ $overdue ?? 0 }}</div>
         </div>
     </div>
 
@@ -27,22 +27,22 @@
     <section class="quick-actions">
         <h2>Quick Actions</h2>
         <div class="actions-grid">
-            <button class="action-button">
+            <a href="{{ route('borrowing.create') }}" class="action-button text-decoration-none">
                 <i class="fas fa-plus-circle"></i>
-                Borrowed Record
-            </button>
-            <button class="action-button">
-                <i class="fas fa-arrow-left"></i>
-                Return Item
-            </button>
-            <button class="action-button">
+                <span>Add Borrowing</span>
+            </a>
+            <a href="{{ route('borrowing.index') }}" class="action-button text-decoration-none">
+                <i class="fas fa-file-alt"></i>
+                <span>Borrow List</span>
+            </a>
+            <a href="{{ route('residents.index') }}" class="action-button text-decoration-none">
                 <i class="fas fa-user-friends"></i>
-                Residents
-            </button>
-            <button class="action-button">
+                <span>Residents</span>
+            </a>
+            <a href="{{ route('items.index') }}" class="action-button text-decoration-none">
                 <i class="fas fa-boxes"></i>
-                Items Available
-            </button>
+                <span>Inventory</span>
+            </a>
         </div>
     </section>
 
@@ -53,7 +53,7 @@
         <table class="table" aria-label="Recent transactions">
             <thead>
             <tr>
-                <th>Transaction ID</th>
+                <th>ID</th>
                 <th>Last Name</th>
                 <th>First Name</th>
                 <th>Item</th>
@@ -65,12 +65,28 @@
             </thead>
 
             <tbody>
-            {{-- EMPTY STATE --}}
-            <tr>
-                <td colspan="8" style="text-align:center; padding:20px; color:gray;">
-                    No recent transactions.
-                </td>
-            </tr>
+            @forelse ($recent_transactions as $t)
+                <tr>
+                    <td>{{ $t->id }}</td>
+                    <td>{{ $t->resident->last_name ?? '—' }}</td>
+                    <td>{{ $t->resident->first_name ?? '—' }}</td>
+                    <td>{{ $t->item->name ?? '—' }}</td>
+                    <td>{{ $t->quantity }}</td>
+                    <td>{{ $t->date_borrowed }}</td>
+                    <td>{{ $t->returned_at ? \Carbon\Carbon::parse($t->returned_at)->format('Y-m-d') : '—' }}</td>
+                    <td>
+                        <span class="status-badge {{ strtolower($t->status) }}">
+                            {{ $t->status }}
+                        </span>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="8" style="text-align:center; padding:20px; color:gray;">
+                        No recent transactions.
+                    </td>
+                </tr>
+            @endforelse
             </tbody>
         </table>
     </div>
