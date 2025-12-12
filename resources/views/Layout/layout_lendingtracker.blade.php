@@ -68,7 +68,7 @@
                 <span></span>
             </button>
 
-            <div class="page-title" style="text-transform: uppercase;">
+            <div class="page-title uppercase">
                 @yield('page-title', 'Dashboard')
             </div>
 
@@ -81,7 +81,7 @@
             <div class="dropdown" id="dropdown-menu">
 <form method="POST" action="{{ route('logout') }}">
     @csrf
-    <button type="submit" style="background:none; border:none; width:100%; text-align:left; padding:10px 16px; cursor:pointer;">
+    <button type="submit" class="dropdown-btn">
         <i class="fas fa-sign-out-alt"></i> Logout
     </button>
 </form>

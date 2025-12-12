@@ -7,15 +7,15 @@
 
     {{-- Success message --}}
     @if (session('success'))
-        <div class="success-message" style="margin-bottom:12px;">
+        <div class="success-message mb-12">
             {{ session('success') }}
         </div>
     @endif
 
     {{-- Validation errors --}}
     @if ($errors->any())
-        <div class="error-message" style="margin-bottom:12px;">
-            <ul style="margin:0; padding-left:18px;">
+        <div class="error-message mb-12">
+            <ul class="error-list">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -35,13 +35,13 @@
         </div>
 
         <button class="btn" type="button" id="btn-open-add-item">
-            <i class="fas fa-plus" style="margin-right:8px"></i>
+            <i class="fas fa-plus mr-8"></i>
             Add Item
         </button>
     </div>
 
     {{-- Items table --}}
-    <div class="card table-card" style="margin-top:20px; padding:18px;">
+    <div class="card table-card mt-20 p-18">
         <h3>Item Inventory</h3>
 
         <table class="table" id="items-table">
@@ -53,7 +53,7 @@
                     <th>Available</th>
                     <th>Condition</th>
                     <th>Status</th>
-                    <th style="width:140px;">Actions</th>
+                    <th class="w-140">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -65,13 +65,12 @@
                         <td>{{ $item->available_quantity }}</td>
                         <td>{{ $item->condition }}</td>
                         <td>{{ $item->status }}</td>
-                        <td style="display:flex; gap:6px;">
+                        <td class="d-flex flex-gap-6">
 
                             {{-- VIEW --}}
                             <button
                                 type="button"
-                                class="btn"
-                                style="padding:4px 8px;font-size:0.8rem;background:#04AA6D;"
+                                class="btn btn-sm btn-success"
                                 data-view-item
                                 data-item='@json($item)'
                             >
@@ -81,8 +80,7 @@
                             {{-- EDIT --}}
                             <button
                                 type="button"
-                                class="btn"
-                                style="padding:4px 8px;font-size:0.8rem;"
+                                class="btn btn-sm"
                                 data-edit-item
                                 data-update-url="{{ route('items.update', $item) }}"
                                 data-id="{{ $item->id }}"
@@ -103,8 +101,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit"
-                                        class="btn "
-                                        style="padding:4px 8px;font-size:0.8rem;background:#b3261e;">
+                                        class="btn btn-sm btn-danger">
                                     Delete
                                 </button>
                             </form>
@@ -112,7 +109,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" style="text-align:center; padding:20px; color:gray;">
+                        <td colspan="7" class="text-center p-20 text-gray">
                             No items found. Click <strong>Add Item</strong> to register a new asset.
                         </td>
                     </tr>
@@ -193,10 +190,10 @@
                 <p><strong>Status:</strong> <span id="view-item-status"></span></p>
                 <p><strong>Description:</strong> <span id="view-item-desc"></span></p>
 
-                <hr style="margin:16px 0;">
+                <hr class="my-16">
 
                 <h4>Borrowing Logs</h4>
-                <table class="table" style="margin-top:8px;">
+                <table class="table mt-8">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -209,7 +206,7 @@
                     </thead>
                     <tbody id="item-logs-body">
                         <tr>
-                            <td colspan="6" style="text-align:center; padding:10px; color:gray;">
+                            <td colspan="6" class="text-center p-10 text-gray">
                                 No logs yet for this item.
                             </td>
                         </tr>
@@ -341,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 logsBody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="text-align:center; padding:10px; color:gray;">
+                        <td colspan="6" class="text-center p-10 text-gray">
                             No logs yet for this item.
                         </td>
                     </tr>`;

@@ -184,6 +184,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/archive', [App\Http\Controllers\ArchiveController::class, 'index'])->name('archive.index');
     Route::put('/archive/{id}/restore', [App\Http\Controllers\ArchiveController::class, 'restore'])->name('archive.restore');
     Route::delete('/archive/{id}', [App\Http\Controllers\ArchiveController::class, 'destroy'])->name('archive.destroy');
+    // Archive Resident Routes
+    Route::put('/archive/resident/{id}/restore', [App\Http\Controllers\ArchiveController::class, 'restoreResident'])->name('archive.resident.restore');
+    Route::delete('/archive/resident/{id}', [App\Http\Controllers\ArchiveController::class, 'destroyResident'])->name('archive.resident.destroy');
 
     // Return Tracking (Optional - duplicate of borrowing return? Or separate view?)
     // Leaving as view for now if it serves a specific purpose, otherwise could be removed.

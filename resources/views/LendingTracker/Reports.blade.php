@@ -33,7 +33,7 @@
     {{-- ===================== --}}
     {{-- 2: BORROWED ITEMS SUMMARY --}}
     {{-- ===================== --}}
-    <div class="card" style="padding:18px">
+    <div class="card p-18">
         <h3 class="muted">Borrowed Items Summary</h3>
 
         <table class="table mt-3">
@@ -67,7 +67,7 @@
     {{-- ===================== --}}
     {{-- 3: DAMAGED / LOST ITEMS SUMMARY --}}
     {{-- ===================== --}}
-    <div class="card" style="padding:18px">
+    <div class="card p-18">
         <h3 class="muted">Damaged / Lost Items Summary</h3>
 
         <table class="table mt-3">
@@ -102,11 +102,11 @@
     {{-- ===================== --}}
     {{-- 5: TREND OVERVIEW CHART --}}
     {{-- ===================== --}}
-    <div class="card" style="padding:18px">
+    <div class="card p-18">
         <h3 class="muted">Borrowing Trend Overview (Monthly)</h3>
 
         {{-- Placeholder for your chart.js or Livewire chart --}}
-        <div style="height:300px; background:#f9f9f9; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+        <div class="h-300 bg-light rounded d-flex align-center justify-center">
             <span class="muted">Chart Placeholder</span>
         </div>
     </div>

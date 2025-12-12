@@ -7,15 +7,15 @@
 
     {{-- Success Message --}}
     @if (session('success'))
-        <div class="success-message" style="margin-bottom:12px;">
+        <div class="success-message mb-12">
             {{ session('success') }}
         </div>
     @endif
 
     {{-- Validation Errors --}}
     @if ($errors->any())
-        <div class="error-message" style="margin-bottom:12px;">
-            <ul style="margin:0; padding-left:18px;">
+        <div class="error-message mb-12">
+            <ul class="error-list">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -27,10 +27,10 @@
     {{-- BORROWING HISTORY ONLY --}}
     {{-- ===================== --}}
 
-    <div class="card" style="margin-top:20px; padding:18px;">
+    <div class="card mt-20 p-18">
         <h3>Borrowing History</h3>
 
-        <table class="table" style="margin-top:10px;">
+        <table class="table mt-10">
             <thead>
                 <tr>
                     <th>#</th>
@@ -70,14 +70,15 @@
                         {{-- STATUS (Borrowed / Returned / Lost / Overdue) --}}
                         <td>
                             @php
-                                $status = $b->status;
-                                $color  =
-                                    $status === 'Returned' ? 'green' :
-                                    ($status === 'Lost' ? 'red' :
-                                    ($status === 'Overdue' ? 'orange' : '#555'));
+                                $statusClass = match($b->status) {
+                                    'Returned' => 'text-success',
+                                    'Lost'     => 'text-danger',
+                                    'Overdue'  => 'text-warning',
+                                    default    => 'text-muted'
+                                };
                             @endphp
-                            <span style="padding:2px 8px; border-radius:999px; font-size:0.8rem; background:rgba(0,0,0,0.04); color:{{ $color }};">
-                                {{ $status }}
+                            <span class="badge {{ $statusClass }}">
+                                {{ $b->status }}
                             </span>
                         </td>
 
@@ -87,7 +88,7 @@
                         {{-- LOST? --}}
                         <td>
                             @if ($b->is_lost)
-                                <span style="color:red; font-weight:600;">Yes</span>
+                                <span class="text-danger text-bold">Yes</span>
                             @else
                                 <span>No</span>
                             @endif
@@ -103,12 +104,12 @@
                                 {{-- Form to mark as returned / lost with condition --}}
                                 <form method="POST"
                                       action="{{ route('borrowing.return', $b) }}"
-                                      style="display:flex; flex-direction:column; gap:4px; min-width:180px;"
+                                      class="d-flex flex-col flex-gap-4 min-w-180"
                                       onsubmit="return confirm('Mark this as returned / lost?');">
 
                                     @csrf
 
-                                    <select name="condition_returned" class="select" style="padding:4px 8px; font-size:0.8rem;">
+                                    <select name="condition_returned" class="select select-sm">
                                         <option value="">Condition</option>
                                         <option value="Good">Good</option>
                                         <option value="Damaged">Damaged</option>
@@ -116,24 +117,22 @@
 
                                     <input type="text"
                                            name="received_by"
-                                           class="input"
-                                           placeholder="Received by (optional)"
-                                           style="padding:4px 8px; font-size:0.8rem;">
+                                           class="input input-sm"
+                                           placeholder="Received by (optional)">
 
-                                    <label style="font-size:0.8rem; display:flex; align-items:center; gap:4px; margin-top:2px;">
-                                        <input type="checkbox" name="is_lost" value="1" style="width:auto; margin:0;">
+                                    <label class="checkbox-label mt-2">
+                                        <input type="checkbox" name="is_lost" value="1" class="checkbox-input">
                                         Mark as LOST (no stock returned)
                                     </label>
 
                                     <button type="submit"
-                                            class="btn btn-secondary"
-                                            style="padding:4px 8px;font-size:0.8rem; margin-top:4px;">
+                                            class="btn btn-secondary btn-sm mt-4">
                                         Mark as Returned
                                     </button>
                                 </form>
                             @else
                                 {{-- Already processed --}}
-                                <span style="font-size:0.8rem; color:gray;">
+                                <span class="text-sm text-gray">
                                     {{ $b->status === 'Lost' ? 'Processed as lost' : 'Already returned' }}
                                 </span>
                             @endif
@@ -141,7 +140,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="13" style="text-align:center; padding:20px; color:gray;">
+                        <td colspan="13" class="text-center p-20 text-gray">
                             No borrowing records yet.
                         </td>
                     </tr>

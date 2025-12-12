@@ -24,7 +24,7 @@
 
         @if ($errors->any())
             <div class="error-message">
-                <ul style="margin:0; padding-left:18px; text-align:left;">
+                <ul class="error-list">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach

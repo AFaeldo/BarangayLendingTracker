@@ -29,8 +29,8 @@
             <h1>Create Admin Account</h1>
 
             @if ($errors->any())
-                <div class="error-message" style="margin-bottom:12px;">
-                    <ul style="margin:0; padding-left:18px; text-align:left;">
+                <div class="error-message mb-12">
+                    <ul class="error-list">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach

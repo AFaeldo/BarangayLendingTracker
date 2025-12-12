@@ -4,18 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Borrowing;
+use App\Models\Resident;
 use App\Models\Item;
 use Illuminate\Support\Facades\DB;
 
 class ArchiveController extends Controller
 {
     /**
-     * Show all archived (returned/lost) borrowing records.
+     * Show all archived (returned/lost) borrowing records AND inactive residents.
      */
     public function index(Request $request)
     {
         $q = $request->query('q');
 
+        // --- Borrowing Archives ---
         $query = Borrowing::with(['resident', 'item'])
             ->whereIn('status', ['Returned', 'Lost']);
 
@@ -30,15 +32,27 @@ class ArchiveController extends Controller
                 });
             });
         }
+        $archives = $query->orderByDesc('updated_at')->paginate(10, ['*'], 'borrowings_page');
 
-        $archives = $query->orderByDesc('updated_at')->paginate(15);
 
-        return view('LendingTracker.Archive', compact('archives', 'q'));
+        // --- Resident Archives (Inactive) ---
+        $resQuery = Resident::where('status', 'Inactive');
+
+        if ($q) {
+            $resQuery->where(function ($sub) use ($q) {
+                $sub->where('last_name', 'like', "%{$q}%")
+                    ->orWhere('first_name', 'like', "%{$q}%")
+                    ->orWhere('middle_name', 'like', "%{$q}%");
+            });
+        }
+        $archivedResidents = $resQuery->orderBy('last_name')->paginate(10, ['*'], 'residents_page');
+
+
+        return view('LendingTracker.Archive', compact('archives', 'archivedResidents', 'q'));
     }
 
     /**
-     * Restore archived record (Mark as Borrowed again).
-     * CAUTION: This will deduct stock again.
+     * Restore archived borrowing record (Mark as Borrowed again).
      */
     public function restore($id)
     {
@@ -51,27 +65,12 @@ class ArchiveController extends Controller
         DB::transaction(function () use ($borrowing) {
             $item = Item::findOrFail($borrowing->item_id);
 
-            // Check if enough stock to restore (re-borrow)
-            // If it was lost, stock wasn't returned, so we don't need to deduct?
-            // Wait, logic:
-            // If Returned: stock was incremented. To restore (make borrowed), we must decrement stock.
-            // If Lost: stock was NOT incremented. To restore (make borrowed), we don't change stock? 
-            // Actually, if it was 'Lost', the item is gone physically. Marking it 'Borrowed' implies it's out with the resident.
-            // The logic in BorrowingController::markReturned:
-            // If Lost: Status=Lost. Stock NOT incremented.
-            // If Returned: Status=Returned. Stock incremented.
-            
-            // So:
-            // If reverting 'Returned' -> 'Borrowed': Decrement stock.
-            // If reverting 'Lost' -> 'Borrowed': Stock remains same (it was effectively "out" and is still "out").
-
             if ($borrowing->status === 'Returned') {
                 if ($item->available_quantity < $borrowing->quantity) {
                     throw new \Exception("Cannot restore: Insufficient stock to mark as borrowed.");
                 }
                 $item->decrement('available_quantity', $borrowing->quantity);
             }
-            // If Lost, stock wasn't added back, so no need to deduct.
 
             $borrowing->update([
                 'status' => 'Borrowed',
@@ -87,7 +86,7 @@ class ArchiveController extends Controller
     }
 
     /**
-     * Permanently delete record.
+     * Permanently delete borrowing record.
      */
     public function destroy($id)
     {
@@ -96,5 +95,40 @@ class ArchiveController extends Controller
 
         return redirect()->route('archive.index')
             ->with('success', 'Record permanently deleted.');
+    }
+
+    /**
+     * Restore archived resident (Mark as Active).
+     */
+    public function restoreResident($id)
+    {
+        $resident = Resident::findOrFail($id);
+        
+        if ($resident->status === 'Active') {
+             return back()->with('error', 'Resident is already active.');
+        }
+
+        $resident->update(['status' => 'Active']);
+
+        return redirect()->route('archive.index')
+            ->with('success', 'Resident restored to Active list.');
+    }
+
+    /**
+     * Permanently delete resident.
+     */
+    public function destroyResident($id)
+    {
+        $resident = Resident::findOrFail($id);
+        
+        // Safety check: check for borrowings
+        if ($resident->borrowings()->exists()) {
+             return back()->withErrors(['error' => 'Cannot permanently delete resident. They have associated borrowing records.']);
+        }
+
+        $resident->delete();
+
+        return redirect()->route('archive.index')
+            ->with('success', 'Resident permanently deleted.');
     }
 }

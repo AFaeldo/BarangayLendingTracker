@@ -24,7 +24,7 @@
     {{-- Validation Errors (Server Side) --}}
     @if ($errors->any())
         <div class="alert alert-danger" role="alert">
-            <ul style="margin: 0; padding-left: 20px;">
+            <ul class="error-list">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -33,12 +33,12 @@
     @endif
 
     <!-- Top bar: search + add -->
-    <div class="top-bar" style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:14px;">
+    <div class="top-bar d-flex justify-between align-center flex-gap-12 mb-14">
         <div>
-            <input id="search-input" class="input" type="text" placeholder="Search Resident name, contact or purok..." aria-label="Search residents" style="width:320px;">
+            <input id="search-input" class="input w-320" type="text" placeholder="Search Resident name, contact or purok..." aria-label="Search residents">
         </div>
 
-        <div style="display:flex; gap:8px;">
+        <div class="d-flex flex-gap-8">
             <button id="btn-open-add-resident" class="btn" type="button" aria-haspopup="dialog">
                 <i class="fas fa-user-plus" aria-hidden="true"></i> Add New Resident
             </button>
@@ -51,8 +51,8 @@
             <h3 id="resident-list-heading">Resident List</h3>
         </div>
 
-        <div class="card-body" style="overflow-x:auto;">
-            <table id="residents-table" class="table" style="width:100%;" role="table" aria-describedby="resident-list-heading">
+        <div class="card-body overflow-x-auto">
+            <table id="residents-table" class="table w-full" role="table" aria-describedby="resident-list-heading">
                 <thead>
                     <tr>
                         <th scope="col">ID</th>
@@ -103,7 +103,7 @@
                                 </span>
                             </td>
                             <td class="text-center">
-                                <div class="action-buttons" style="display:inline-flex; gap:6px; align-items:center;">
+                                <div class="action-buttons d-inline-flex flex-gap-6 align-center">
                                     {{-- VIEW --}}
                                     <button
                                         type="button"
@@ -125,7 +125,7 @@
                                     </button>
 
                                     {{-- ARCHIVE (soft delete) --}}
-                                    <form method="POST" action="{{ route('residents.archive', $resident) }}" onsubmit="return confirm('Are you sure you want to ARCHIVE this resident?');" style="display:inline;">
+                                    <form method="POST" action="{{ route('residents.archive', $resident) }}" onsubmit="return confirm('Are you sure you want to ARCHIVE this resident?');" class="d-inline">
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit" class="btn btn-danger" title="Archive resident" aria-label="Archive resident {{ $resident->id }}">
@@ -155,7 +155,7 @@
     <!-- ================= MODALS ================= -->
 
     {{-- Add / Edit Resident Modal --}}
-    <div id="resident-modal" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" style="display:none;">
+    <div id="resident-modal" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true">
         <div class="modal" role="document" aria-labelledby="resident-modal-title">
             <div class="modal-header">
                 <h3 id="resident-modal-title">Add New Resident</h3>
@@ -168,7 +168,7 @@
                 <div id="method-spoof"></div>
 
                 {{-- hidden id display (for edit only) --}}
-                <div class="form-row" id="resident-id-row" style="display:none;">
+                <div class="form-row d-none" id="resident-id-row">
                     <label>Resident ID</label>
                     <input type="text" name="resident_id_display" class="input" readonly>
                 </div>
@@ -252,7 +252,7 @@
     </div>
 
     {{-- View Resident Modal --}}
-    <div id="resident-view-modal" class="modal-backdrop" aria-hidden="true" role="dialog" style="display:none;">
+    <div id="resident-view-modal" class="modal-backdrop" aria-hidden="true" role="dialog">
         <div class="modal" role="document" aria-labelledby="resident-view-title">
             <div class="modal-header">
                 <h3 id="resident-view-title">Resident Details</h3>
@@ -342,7 +342,8 @@ document.addEventListener('DOMContentLoaded', function () {
         residentForm.reset();
         methodSpoof.innerHTML = '';
         residentForm.action = "{{ route('residents.store') }}";
-        residentIdRow.style.display = 'none';
+        residentIdRow.style.display = 'none'; // Keep as inline style manipulation by JS if that's what it does, or switch to class toggle if we refactor JS. 
+        // Note: JS here uses .style.display = 'none'. This will override the class. So it's fine.
         modalTitle.textContent = 'Add New Resident';
         showModal(residentModal);
     });
@@ -382,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function () {
             residentForm.reset();
             // insert method spoof only once
             methodSpoof.innerHTML = '<input type="hidden" name="_method" value="PUT">';
-            residentIdRow.style.display = 'flex';
+            residentIdRow.style.display = 'flex'; // JS overrides style
             residentForm.action = "{{ url('/residents') }}/" + r.id;
             modalTitle.textContent = 'Edit Resident';
             // set fields (guard each selector)

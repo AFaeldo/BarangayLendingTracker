@@ -48,7 +48,7 @@
 
     {{-- RECENT TRANSACTIONS --}}
     <div>
-        <h3 class="muted" style="margin-bottom:10px">Recent Transactions</h3>
+        <h3 class="muted mb-10">Recent Transactions</h3>
 
         <table class="table" aria-label="Recent transactions">
             <thead>
@@ -82,7 +82,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" style="text-align:center; padding:20px; color:gray;">
+                    <td colspan="8" class="text-center p-20 text-gray">
                         No recent transactions.
                     </td>
                 </tr>
