@@ -11,8 +11,11 @@ return new class extends Migration
         Schema::create('borrowings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('resident_id')->constrained()->onDelete('cascade');
-            $table->foreignId('item_id')->constrained()->onDelete('cascade');
-            $table->integer('quantity')->default(1); // new field
+            // We cannot add constrained item_id here because items table doesn't exist yet!
+            // We will add it in a later migration.
+            // $table->foreignId('item_id')->constrained()->onDelete('cascade'); 
+            
+            $table->integer('quantity')->default(1); 
             $table->date('date_borrowed')->nullable(false);
             $table->date('due_date')->nullable();
             $table->enum('status', ['Borrowed','Returned','Overdue'])->default('Borrowed');

@@ -55,25 +55,33 @@
                 @foreach($archives as $index => $record)
                     <tr>
                         <td>{{ $archives->firstItem() + $index }}</td>
-                        <td>{{ $record->borrower_name ?? $record->resident->name ?? '—' }}</td>
-                        <td>{{ $record->item->name ?? $record->item_name ?? '—' }}</td>
-                        <td>{{ $record->quantity }}</td>
-                        <td>{{ $record->borrowed_at ? $record->borrowed_at->format('Y-m-d') : '—' }}</td>
-                        <td>{{ $record->due_date ? $record->due_date->format('Y-m-d') : '—' }}</td>
                         <td>
-                            @if($record->returned_at)
-                                <span title="Returned at {{ $record->returned_at->format('Y-m-d H:i') }}"><i class="fas fa-check-circle" style="color:green"></i></span>
+                            @if($record->resident)
+                                {{ $record->resident->last_name }}, {{ $record->resident->first_name }}
                             @else
-                                <span title="Not returned"><i class="fas fa-clock" style="color:orange"></i></span>
+                                <span class="text-muted">Unknown Resident</span>
                             @endif
                         </td>
-                        <td>{{ Str::limit($record->notes, 40) }}</td>
+                        <td>{{ $record->item->name ?? 'Unknown Item' }}</td>
+                        <td>{{ $record->quantity }}</td>
+                        <td>{{ \Carbon\Carbon::parse($record->date_borrowed)->format('Y-m-d') }}</td>
+                        <td>{{ $record->due_date ? \Carbon\Carbon::parse($record->due_date)->format('Y-m-d') : '—' }}</td>
+                        <td>
+                            @if($record->returned_at)
+                                <span title="Returned at {{ \Carbon\Carbon::parse($record->returned_at)->format('Y-m-d H:i') }}"><i class="fas fa-check-circle" style="color:green"></i> {{ \Carbon\Carbon::parse($record->returned_at)->format('Y-m-d') }}</span>
+                            @elseif($record->is_lost)
+                                <span title="Lost"><i class="fas fa-times-circle" style="color:red"></i> Lost</span>
+                            @else
+                                <span title="Not returned"><i class="fas fa-clock" style="color:orange"></i> Pending</span>
+                            @endif
+                        </td>
+                        <td>{{ Str::limit($record->remarks, 40) }}</td>
                         <td class="actions" style="white-space:nowrap;">
                             <form method="POST" action="{{ route('archive.restore', $record->id) }}" style="display:inline;">
                                 @csrf
                                 @method('PUT')
-                                <button type="submit" class="btn" title="Restore" onclick="return confirm('Restore this record to active borrowings?');">
-                                    <i class="fas fa-undo"></i> Restore
+                                <button type="submit" class="btn" title="Restore to Active" onclick="return confirm('Restore this record to active borrowings? This will deduct stock again if it was returned.');">
+                                    <i class="fas fa-undo"></i>
                                 </button>
                             </form>
 
@@ -81,7 +89,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger" title="Delete permanently" onclick="return confirm('Permanently delete this archived record? This cannot be undone.');">
-                                    <i class="fas fa-trash-alt"></i> Delete
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>
                         </td>

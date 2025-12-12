@@ -19,10 +19,21 @@ class BorrowingController extends Controller
             ->orderByDesc('date_borrowed')
             ->get();
 
-        $residents = Resident::orderBy('last_name')->orderBy('first_name')->get();
-        $items     = Item::orderBy('name')->get();
+        $residents = Resident::where('status', 'Active')->orderBy('last_name')->orderBy('first_name')->get();
+        $items     = Item::where('available_quantity', '>', 0)->orderBy('name')->get();
 
         return view('LendingTracker.Borrowing', compact('borrowings', 'residents', 'items'));
+    }
+
+    /**
+     * Show the form for creating a new borrowing record.
+     */
+    public function create()
+    {
+        $residents = Resident::where('status', 'Active')->orderBy('last_name')->orderBy('first_name')->get();
+        $items     = Item::where('available_quantity', '>', 0)->orderBy('name')->get();
+
+        return view('LendingTracker.AddBorrowing', compact('residents', 'items'));
     }
 
     /**
@@ -33,6 +44,13 @@ class BorrowingController extends Controller
         $data = $this->validateBorrowing($request);
 
         DB::transaction(function () use ($data) {
+            $resident = Resident::findOrFail($data['resident_id']);
+            if ($resident->status !== 'Active') {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'resident_id' => "Resident is not Active and cannot borrow items."
+                ]);
+            }
+
             $item = Item::findOrFail($data['item_id']);
 
             if ($data['quantity'] > $item->available_quantity) {
