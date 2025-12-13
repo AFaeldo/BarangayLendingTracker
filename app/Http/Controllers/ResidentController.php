@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Resident;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ResidentController extends Controller
 {
@@ -40,7 +41,7 @@ class ResidentController extends Controller
      */
     public function update(Request $request, Resident $resident)
     {
-        $data = $this->validateResident($request);
+        $data = $this->validateResident($request, $resident);
 
         DB::transaction(function () use ($resident, $data) {
             $resident->update($data);
@@ -85,14 +86,21 @@ class ResidentController extends Controller
     /**
      * Validation rules for resident.
      */
-    protected function validateResident(Request $request): array
+    protected function validateResident(Request $request, ?Resident $resident = null): array
     {
         return $request->validate([
             'last_name'        => ['required', 'string', 'max:255'],
-            'first_name'       => ['required', 'string', 'max:255'],
+            'first_name'       => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('residents')->where(function ($query) use ($request) {
+                    return $query->where('last_name', $request->last_name);
+                })->ignore($resident),
+            ],
             'middle_name'      => ['nullable', 'string', 'max:255'],
             'gender'           => ['required', 'string', 'max:50'],
-            'age'              => ['nullable', 'integer', 'min:0'],
+            'age'              => ['nullable', 'integer', 'min:18'],
             'birthdate'        => ['nullable', 'date'],
             'sitio'            => ['nullable', 'string', 'max:255'],
             'purok'            => ['nullable', 'string', 'max:255'],
@@ -100,6 +108,9 @@ class ResidentController extends Controller
             'marital_status'   => ['nullable', 'string', 'max:50'],
             'status'           => ['required', 'in:Active,Inactive'],
             'remarks'          => ['nullable', 'string'],
+        ], [
+            'first_name.unique' => 'A resident with this First Name and Last Name already exists.',
+            'age.min' => 'The resident must be an adult (at least 18 years old).',
         ]);
     }
 }
