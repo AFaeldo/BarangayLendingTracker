@@ -57,7 +57,7 @@
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Name</th>
-                        <th scope="col">Gender</th>
+                        <th scope="col">Sex</th>
                         <th scope="col">Age</th>
                         <th scope="col">Sitio / Purok</th>
                         <th scope="col">Contact</th>
@@ -190,9 +190,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="gender">Gender <span class="text-danger">*</span></label>
+                        <label for="gender">Sex <span class="text-danger">*</span></label>
                         <select id="gender" name="gender" class="select" required>
-                            <option value="" disabled selected>Select Gender</option>
+                            <option value="" disabled selected>Select Sex</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                         </select>

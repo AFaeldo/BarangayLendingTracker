@@ -3,16 +3,21 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Brgy. San Antonio')</title>
 
-    {{-- Load CSS & JS from resources via Vite --}}
-    @vite(['resources/css/style.css', 'resources/js/script.js'])
+    {{-- Bootstrap 5 --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     {{-- Font Awesome --}}
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    {{-- Your custom CSS (override Bootstrap here) --}}
+    @vite(['resources/css/style.css', 'resources/js/script.js'])
 </head>
+
+
 
 <body>
 <div class="overlay" aria-hidden="true"></div>
@@ -95,6 +100,8 @@
         </section>
     </main>
 </div>
+{{-- Bootstrap JS --}}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 @stack('scripts')
 </body>
