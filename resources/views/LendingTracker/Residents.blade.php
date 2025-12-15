@@ -151,12 +151,13 @@
             </div>
         @endif
     </div>
+@endsection
 
-    <!-- ================= MODALS ================= -->
-
+{{-- ================= MODALS ================= --}}
+@section('modals')
     {{-- Add / Edit Resident Modal --}}
-    <div id="resident-modal" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true">
-        <div class="modal" role="document" aria-labelledby="resident-modal-title">
+<div id="resident-modal" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal" role="document" aria-labelledby="resident-modal-title">
             <div class="modal-header">
                 <h3 id="resident-modal-title">Add New Resident</h3>
                 <button type="button" class="modal-close" id="btn-close-resident-modal" aria-label="Close">&times;</button>
@@ -326,8 +327,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- Modal helpers ---
-    function showModal(el) { if (!el) return; el.style.display = 'flex'; el.setAttribute('aria-hidden','false'); }
-    function hideModal(el) { if (!el) return; el.style.display = 'none'; el.setAttribute('aria-hidden','true'); }
+    function showModal(el) { if (!el) return; el.classList.add("show"); el.setAttribute('aria-hidden','false'); }
+    function hideModal(el) { if (!el) return; el.classList.remove("show"); el.setAttribute('aria-hidden','true'); }
 
     // Resident modal elements
     const residentModal = document.getElementById('resident-modal');
@@ -450,16 +451,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Accessibility: focus the first input when modal opens (small enhancement)
-    const observer = new MutationObserver(mutations => {
-        mutations.forEach(m => {
-            if (m.attributeName === 'style' || m.attributeName === 'aria-hidden') {
-                if (residentModal.style.display !== 'none') {
-                    residentForm.querySelector('input, select, textarea')?.focus();
-                }
+const observer = new MutationObserver(mutations => {
+    mutations.forEach(m => {
+        if (m.attributeName === 'aria-hidden') {
+            if (residentModal.classList.contains('show')) {
+                residentForm.querySelector('input, select, textarea')?.focus();
             }
-        });
+        }
     });
-    observer.observe(residentModal, { attributes: true, attributeFilter: ['style', 'aria-hidden'] });
+});
+observer.observe(residentModal, { attributes: true, attributeFilter: ['aria-hidden'] });
 
 });
 </script>
